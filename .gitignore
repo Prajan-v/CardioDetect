@@ -12,3 +12,5 @@ env/
 notebooks/.ipynb_checkpoints/
 data/interim/
 !data/interim/.gitkeep
+data/brfss/
+!data/brfss/.gitkeep
