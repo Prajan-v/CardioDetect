@@ -2,7 +2,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from .schema import NUMERIC_FEATURES, CATEGORICAL_FEATURES
+from .schema import NUMERIC_FEATURES, CATEGORICAL_FEATURES, BINARY_FEATURES
+from .outliers import IQRClipper
 
 
 def build_preprocessor(numeric_features=None, categorical_features=None):
@@ -10,6 +11,7 @@ def build_preprocessor(numeric_features=None, categorical_features=None):
     cf = categorical_features or CATEGORICAL_FEATURES
     num = Pipeline(steps=[
         ("imputer", SimpleImputer(strategy="median")),
+        ("clipper", IQRClipper(k=1.5)),
         ("scaler", StandardScaler())
     ])
     cat = Pipeline(steps=[
@@ -18,6 +20,7 @@ def build_preprocessor(numeric_features=None, categorical_features=None):
     ])
     ct = ColumnTransformer(transformers=[
         ("num", num, nf),
-        ("cat", cat, cf)
+        ("cat", cat, cf),
+        ("bin", "passthrough", BINARY_FEATURES)
     ])
     return ct

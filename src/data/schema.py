@@ -5,10 +5,7 @@ NUMERIC_FEATURES = [
     "thalach",
     "oldpeak",
     "ca",
-    "age_decade",
-    "is_hypertensive",
-    "is_hyperlipidemic",
-    "st_depr_high"
+    "age_decade"
 ]
 CATEGORICAL_FEATURES = [
     "sex",
@@ -20,3 +17,8 @@ CATEGORICAL_FEATURES = [
     "thal"
 ]
 TARGET_COLUMN = "target"
+BINARY_FEATURES = [
+    "is_hypertensive",
+    "is_hyperlipidemic",
+    "st_depr_high"
+]

@@ -7,7 +7,7 @@ RAW_DIR = DATA_DIR / "raw"
 INTERIM_DIR = DATA_DIR / "interim"
 PROCESSED_DIR = DATA_DIR / "processed"
 MODELS_DIR = BASE_DIR / "models"
-DOCS_DIR = BASE_DIR / "docs"
+DOCS_DIR = BASE_DIR / "reports"
 CLEVELAND_URL = "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
 
 def ensure_dirs():

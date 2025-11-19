@@ -29,13 +29,17 @@ def _paths() -> Tuple[Path, Path, Path, Path]:
     return root, output, reports, figures
 
 
-def _load_or_build_ultimate(output: Path) -> pd.DataFrame:
-    f = output / "ultimate_heart_disease_dataset.csv"
-    if not f.exists():
-        from scripts.build_ultimate_timeline_dataset import main as build_main
-        logger.info("Ultimate dataset not found. Building now.")
-        build_main()
-    return pd.read_csv(f)
+def _load_dataset(root: Path, output: Path) -> pd.DataFrame:
+    f1 = output / "ultimate_heart_disease_dataset.csv"
+    if f1.exists():
+        return pd.read_csv(f1)
+    f2 = root / "data" / "processed" / "combined_processed.csv"
+    if f2.exists():
+        return pd.read_csv(f2)
+    f3 = root / "data" / "processed" / "processed.csv"
+    if f3.exists():
+        return pd.read_csv(f3)
+    raise FileNotFoundError("No dataset found. Run scripts/build.py or scripts/build_combined_dataset.py first.")
 
 
 def _summarize_dataset(df: pd.DataFrame) -> Dict[str, object]:
@@ -168,7 +172,7 @@ def write_data_analysis_report(reports_dir: Path, summary: Dict[str, object]):
     lines.append("## Data Quality")
     lines.append("- Median imputation for numeric features; most-frequent for categoricals")
     lines.append("- Standardization and one-hot encoding within a reproducible pipeline")
-    lines.append("- Outlier handling considered during modeling stage")
+    lines.append("- Outliers clipped via IQR in the numeric pipeline to reduce noise")
     lines.append("")
     lines.append("## Recommendations for Milestone 2")
     lines.append("- Train baselines (Logistic, RF, XGBoost) with calibration")
@@ -206,8 +210,8 @@ def write_ocr_evaluation_report(reports_dir: Path, pred_png: Dict[str, float], p
     lines.append(metrics_pdf.to_markdown(index=False))
     lines.append("")
     lines.append("## Error Analysis and Confidence")
-    lines.append("Errors typically arise from font rendering and thresholding in synthetic samples; real-world scans may introduce skew and noise.")
-    lines.append("Confidence can be approximated via Tesseract confidences or ensemble OCR; not implemented in this milestone.")
+    lines.append("Errors typically arise from thresholding/blur choices and scan artifacts (skew, noise).")
+    lines.append("We record Tesseract word confidences and report an average confidence (ocr_mean_conf) as a reliability signal.")
     lines.append("")
     lines.append("## Limitations and Mitigation")
     lines.append("- Synthetic tests underrepresent real-world variability; add more diverse scanned samples.")
@@ -249,15 +253,15 @@ def write_single_report(root: Path, reports_dir: Path, summary: Dict[str, object
 def main():
     root, output, reports_dir, figures_dir = _paths()
 
-    df = _load_or_build_ultimate(output)
+    df = _load_dataset(root, output)
     summary = _summarize_dataset(df)
 
-    # Ensure advanced figures are present
+    # Ensure EDA figures are present (simple EDA)
     try:
-        from scripts.generate_advanced_eda import main as eda_main
+        from scripts.eda import main as eda_main
         eda_main()
     except Exception as e:
-        logger.warning("Failed to regenerate figures: %s", e)
+        logger.warning("Failed to regenerate EDA figures: %s", e)
 
     # OCR evaluation
     _ensure_tesseract_env()

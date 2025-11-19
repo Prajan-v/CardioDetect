@@ -10,10 +10,10 @@ from src.data.features import add_features
 
 def to_input_row(d):
     row = {
-        "age": None,
+        "age": d.get("age"),
         "trestbps": d.get("bp_sys"),
         "chol": d.get("chol"),
-        "thalach": None,
+        "thalach": d.get("heart_rate"),
         "oldpeak": None,
         "ca": None,
         "sex": None,
