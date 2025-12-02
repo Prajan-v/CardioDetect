@@ -1,16 +1,35 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 .venv/
-venv/
 env/
-.idea/
+venv/
+
+# Data (Ignore real data, keep sample)
+data/raw/
+data/processed/
+data/merged/
+data/external/
+!data/sample_heart_data.csv
+
+# Models (Saved artifacts)
+models/
+*.pkl
+*.npy
+*.pth
+
+# Source Models (Code)
+!src/models/
+
+
+# Reports
+!reports/
+
+*.png
+*.pdf
+
+# IDE
 .vscode/
+.idea/
 .DS_Store
-*.log
-.env
-notebooks/.ipynb_checkpoints/
-data/interim/
-!data/interim/.gitkeep
-data/brfss/
-!data/brfss/.gitkeep
