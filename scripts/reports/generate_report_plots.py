@@ -17,7 +17,7 @@ from src.mlp_tuning import load_splits, encode_categorical_features
 MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
-MLP_V2_PATH = MODELS_DIR / "mlp_v2_best.pkl"
+MLP_V2_PATH = MODELS_DIR / "mlp_v2.pkl"
 
 def generate_plots():
     print("Loading data...")

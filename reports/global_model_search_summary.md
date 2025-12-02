@@ -1,12 +1,12 @@
 # Global Model & Ensemble Search Summary
 
-Baseline (frozen) **mlp_v2_best** – Test Acc=0.9359, Test Recall=0.9190 (at threshold 0.5)
+Baseline (frozen) **mlp_v2** – Test Acc=0.9359, Test Recall=0.9190 (at threshold 0.5)
 
 ## Models Evaluated (tuned thresholds)
 
 | Name | Kind | Val Acc | Val Rec | Test Acc | Test Rec | Test AUC | Meets Constraint? | Beats Baseline? |
 |------|------|---------|---------|----------|----------|----------|-------------------|-----------------|
-| mlp_v2_best | baseline_mlp | 0.9529 | 0.9810 | 0.9310 | 0.9345 | 0.9673 | ✅ | ❌ |
+| mlp_v2 | baseline_mlp | 0.9529 | 0.9810 | 0.9310 | 0.9345 | 0.9673 | ✅ | ❌ |
 | LogisticRegression_balanced | single | 0.5678 | 0.9241 | 0.5639 | 0.9017 | 0.8024 | ❌ | ❌ |
 | RandomForest_default_tuned | single | 0.8131 | 0.9241 | 0.8222 | 0.9414 | 0.9042 | ✅ | ❌ |
 | GradientBoosting_default_tuned | single | 0.8462 | 0.9207 | 0.8483 | 0.9276 | 0.9299 | ✅ | ❌ |
@@ -17,6 +17,6 @@ Baseline (frozen) **mlp_v2_best** – Test Acc=0.9359, Test Recall=0.9190 (at th
 
 ## Recommendation
 
-No model or ensemble strictly outperformed `mlp_v2_best` under the recall constraint (Recall ≥ 0.9190 on val & test).
+No model or ensemble strictly outperformed `mlp_v2` under the recall constraint (Recall ≥ 0.9190 on val & test).
 
-**Verdict:** Keep `mlp_v2_best` as the production model.
+**Verdict:** Keep `mlp_v2` as the production model.

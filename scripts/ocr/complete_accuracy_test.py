@@ -23,7 +23,7 @@ print()
 # TEST 1: MLP MODEL - ALL METRICS
 # ============================================================================
 print("\n" + "┌" + "─" * 78 + "┐")
-print("│" + " " * 25 + "TEST 1: MLP v2 Best Model" + " " * 28 + "│")
+print("│" + " " * 26 + "TEST 1: MLP v2 Model" + " " * 27 + "│")
 print("└" + "─" * 78 + "┘")
 print()
 
@@ -45,14 +45,14 @@ try:
     X_train, y_train, X_val, y_val, X_test, y_test = load_splits()
 
     # Apply the same one-hot encoding used during training so that
-    # the feature schema matches the one used for mlp_v2_best.
+    # the feature schema matches the one used for mlp_v2.
     X_train_enc, X_val_enc, X_test_enc = encode_categorical_features(
         X_train, X_val, X_test
     )
     print(f"   ✅ Loaded {len(X_test_enc)} encoded test patients")
 
-    print("\n⏳ Step 2/4: Loading mlp_v2_best model artifact...")
-    model_path = Path("models/mlp_v2_best.pkl")
+    print("\n⏳ Step 2/4: Loading mlp_v2 model artifact...")
+    model_path = Path("models/mlp_v2.pkl")
     if not model_path.exists():
         raise FileNotFoundError(f"Model not found: {model_path}")
     artifact = joblib.load(model_path)
@@ -99,7 +99,7 @@ try:
 
     print()
     print("=" * 80)
-    print("                         MLP v2 BEST - TEST SET RESULTS")
+    print("                         MLP v2 - TEST SET RESULTS")
     print("=" * 80)
     print()
     print(f"  Test Set:              {len(y_test)} patients")

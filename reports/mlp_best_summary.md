@@ -18,7 +18,7 @@
 
 ## Final Choice
 
-**mlp_v2_best** (Candidate_3)
+**mlp_v2** (Candidate_3)
 
 ### Justification
 

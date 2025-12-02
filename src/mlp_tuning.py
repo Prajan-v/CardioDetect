@@ -54,7 +54,7 @@ DATA_SPLIT_DIR = PROJECT_ROOT / "data" / "split"
 
 # Model paths
 BASELINE_MLP_PATH = MODELS_DIR / "mlp_baseline_locked.pkl"
-MLP_V2_PATH = MODELS_DIR / "mlp_v2_best.pkl"
+MLP_V2_PATH = MODELS_DIR / "mlp_v2.pkl"
 
 # Report paths
 BASELINE_METRICS_MD = REPORTS_DIR / "mlp_baseline_metrics.md"
@@ -747,12 +747,12 @@ def write_best_summary_md(
             f"- F1: {m['f1']:.4f}\n",
             f"- ROC-AUC: {m['roc_auc']:.4f}\n\n",
             "## Final Choice\n\n",
-            f"**mlp_v2_best** (Candidate_{best_candidate['candidate_id']})\n\n",
+            f"**mlp_v2** (Candidate_{best_candidate['candidate_id']})\n\n",
             "### Justification\n\n",
-            f"The new MLP achieves {m['accuracy']:.4f} test accuracy "
-            f"(+{m['accuracy'] - baseline_metrics['accuracy']:.4f} vs baseline) "
-            f"while maintaining recall at {m['recall']:.4f} "
-            f"(change: {m['recall'] - baseline_metrics['recall']:+.4f}), "
+            f"The new MLP achieves {m['accuracy']:.4f} test accuracy ",
+            f"(+{m['accuracy'] - baseline_metrics['accuracy']:.4f} vs baseline) ",
+            f"while maintaining recall at {m['recall']:.4f} ",
+            f"(change: {m['recall'] - baseline_metrics['recall']:+.4f}), ",
             "meeting my criteria for accuracy improvement without sacrificing sensitivity.\n",
         ])
     else:
@@ -813,7 +813,7 @@ def run_full_pipeline(n_trials: int = 100) -> None:
         print(f"\nNew best MLP saved at: {MLP_V2_PATH}")
         print(f"New Accuracy: {m['accuracy']:.4f} (+{m['accuracy'] - baseline_metrics['accuracy']:.4f})")
         print(f"New Recall:   {m['recall']:.4f} ({m['recall'] - baseline_metrics['recall']:+.4f})")
-        print(f"\nFinal choice: mlp_v2_best")
+        print(f"\nFinal choice: mlp_v2")
     else:
         print(f"\nNo improved model found.")
         print(f"Final choice: Baseline_MLP (unchanged)")
