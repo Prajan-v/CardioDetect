@@ -3,20 +3,20 @@
 
 ---
 
-# 📑 TABLE OF CONTENTS
+# TABLE OF CONTENTS
 
 | Part | Chapter | Topic |
 |------|---------|-------|
-| **I** | 1-2 | **The Data Foundation** — Datasets, preprocessing, splitting |
-| **II** | 3-8 | **Machine Learning Pipeline** — XGBoost, tuning, ensemble, interpretability |
-| **III** | 9-10 | **Input Processing** — OCR pipeline, data validation |
-| **IV** | 11-12 | **Output Processing** — Risk categorization, clinical recommendations, PDF reports |
-| **V** | 13-16 | **Web Application** — Backend API, frontend architecture, role-based access |
-| **VI** | 17-20 | **Security** — JWT, password hashing, rate limiting, GDPR compliance |
-| **VII** | 21-23 | **Email & Notifications** — Email service, templates, alerts |
-| **VIII** | 24-25 | **Admin Workflows** — Approval system, pending changes |
-| **IX** | 26-27 | **Testing & Deployment** — Test suite, CI/CD |
-| **Appendix** | — | Quick reference tables, file locations |
+| **I** | 1-2 | **The Data Foundation**  Datasets, preprocessing, splitting |
+| **II** | 3-8 | **Machine Learning Pipeline**  XGBoost, tuning, ensemble, interpretability |
+| **III** | 9-10 | **Input Processing**  OCR pipeline, data validation |
+| **IV** | 11-12 | **Output Processing**  Risk categorization, clinical recommendations, PDF reports |
+| **V** | 13-16 | **Web Application**  Backend API, frontend architecture, role-based access |
+| **VI** | 17-20 | **Security**  JWT, password hashing, rate limiting, GDPR compliance |
+| **VII** | 21-23 | **Email & Notifications**  Email service, templates, alerts |
+| **VIII** | 24-25 | **Admin Workflows**  Approval system, pending changes |
+| **IX** | 26-27 | **Testing & Deployment**  Test suite, CI/CD |
+| **Appendix** |  | Quick reference tables, file locations |
 
 ---
 
@@ -24,7 +24,7 @@
 
 > **"Data is the fuel that powers machine learning. Without good data, even the best algorithms fail."**
 
-Before we can build any machine learning model, we need data—and not just any data, but high-quality, clinically validated data that represents the patterns we want our model to learn. This section explains every dataset we use, why we chose it, where it came from, and how we prepared it for training.
+Before we can build any machine learning model, we need dataand not just any data, but high-quality, clinically validated data that represents the patterns we want our model to learn. This section explains every dataset we use, why we chose it, where it came from, and how we prepared it for training.
 
 ---
 
@@ -36,11 +36,11 @@ Building a machine learning system for cardiovascular disease prediction present
 
 **Question 1: "Does this patient have heart disease RIGHT NOW?"**
 
-This is a **detection** problem. To answer it, we need data that includes the results of diagnostic tests—specifically, stress tests that show how the heart behaves under exertion. These tests reveal problems that might not be visible when the patient is at rest. Features like maximum heart rate achieved during exercise, whether the patient experienced chest pain during the test, and changes in the heart's electrical activity (ST depression) are critical for this task.
+This is a **detection** problem. To answer it, we need data that includes the results of diagnostic testsspecifically, stress tests that show how the heart behaves under exertion. These tests reveal problems that might not be visible when the patient is at rest. Features like maximum heart rate achieved during exercise, whether the patient experienced chest pain during the test, and changes in the heart's electrical activity (ST depression) are critical for this task.
 
 **Question 2: "What is this patient's risk of developing heart disease in the next 10 years?"**
 
-This is a **prediction** problem. To answer it, we need longitudinal data—data collected from patients who were healthy at first and then followed for many years to see who developed heart disease and who didn't. This type of data tells us which risk factors (like high blood pressure, smoking, or high cholesterol) actually predict future disease.
+This is a **prediction** problem. To answer it, we need longitudinal datadata collected from patients who were healthy at first and then followed for many years to see who developed heart disease and who didn't. This type of data tells us which risk factors (like high blood pressure, smoking, or high cholesterol) actually predict future disease.
 
 Because these two questions require fundamentally different types of data, we use two primary datasets: the **UCI Heart Disease Dataset** for detection and the **Framingham Heart Study** for prediction.
 
@@ -62,7 +62,7 @@ The dataset is publicly available through the UCI Machine Learning Repository, m
 | **Source** | [UCI ML Repository](https://archive.ics.uci.edu/ml/datasets/Heart+Disease) |
 | **Year Collected** | 1988 |
 | **Total Samples** | 303 (Cleveland subset) |
-| **Target Variable** | `target` → 0 = No disease, 1 = Disease present |
+| **Target Variable** | `target`  0 = No disease, 1 = Disease present |
 
 #### Why We Chose This Dataset
 
@@ -78,46 +78,46 @@ The key advantage of the UCI dataset is that it contains **stress test results**
 
 #### Complete Feature Description (14 Features)
 
-**Feature 1: Age (age)** — Age is the single most important risk factor for heart disease. As we age, our arteries naturally become stiffer and less flexible, a process called arterial stiffening. Plaque also accumulates on artery walls over time. In the UCI dataset, patient ages range from 29 to 77 years.
+**Feature 1: Age (age)**  Age is the single most important risk factor for heart disease. As we age, our arteries naturally become stiffer and less flexible, a process called arterial stiffening. Plaque also accumulates on artery walls over time. In the UCI dataset, patient ages range from 29 to 77 years.
 
-**Feature 2: Sex (sex)** — Biological sex significantly affects heart disease risk. Men generally develop heart disease about 10 years earlier than women, partly because estrogen provides some protection to women before menopause. Coded as 0 for female and 1 for male.
+**Feature 2: Sex (sex)**  Biological sex significantly affects heart disease risk. Men generally develop heart disease about 10 years earlier than women, partly because estrogen provides some protection to women before menopause. Coded as 0 for female and 1 for male.
 
-**Feature 3: Chest Pain Type (cp)** — This is one of the most diagnostically significant features. Cardiologists classify chest pain into four categories:
+**Feature 3: Chest Pain Type (cp)**  This is one of the most diagnostically significant features. Cardiologists classify chest pain into four categories:
 - **Type 0 - Typical Angina:** Classic heart-related chest pain with pressure/squeezing, triggered by exertion, relieved by rest. Strongly associated with heart disease.
 - **Type 1 - Atypical Angina:** Has some but not all features of typical angina.
 - **Type 2 - Non-Anginal Pain:** Doesn't follow angina pattern; often muscular or digestive.
 - **Type 3 - Asymptomatic:** No chest pain despite possible heart disease ("silent ischemia").
 
-**Feature 4: Resting Blood Pressure (trestbps)** — Blood pressure measured at rest in mmHg. Normal is below 120, Stage 1 hypertension is 130-139, Stage 2 is 140+. Dataset range: 94-200 mmHg.
+**Feature 4: Resting Blood Pressure (trestbps)**  Blood pressure measured at rest in mmHg. Normal is below 120, Stage 1 hypertension is 130-139, Stage 2 is 140+. Dataset range: 94-200 mmHg.
 
-**Feature 5: Serum Cholesterol (chol)** — Total cholesterol in mg/dL. Cholesterol builds up in artery walls, forming plaques that restrict blood flow. Range: 126-564 mg/dL.
+**Feature 5: Serum Cholesterol (chol)**  Total cholesterol in mg/dL. Cholesterol builds up in artery walls, forming plaques that restrict blood flow. Range: 126-564 mg/dL.
 
-**Feature 6: Fasting Blood Sugar (fbs)** — Binary: whether blood sugar exceeds 120 mg/dL. Indicates diabetes/pre-diabetes, which accelerates heart disease.
+**Feature 6: Fasting Blood Sugar (fbs)**  Binary: whether blood sugar exceeds 120 mg/dL. Indicates diabetes/pre-diabetes, which accelerates heart disease.
 
-**Feature 7: Resting ECG Results (restecg)** — Measures heart's electrical activity at rest:
+**Feature 7: Resting ECG Results (restecg)**  Measures heart's electrical activity at rest:
 - Value 0: Normal
 - Value 1: ST-T wave abnormality (blood supply issues)
 - Value 2: Left ventricular hypertrophy (enlarged heart chamber)
 
-**Feature 8: Maximum Heart Rate Achieved (thalach)** — Highest heart rate during stress test. A healthy heart beats faster during exercise. Range: 71-202 bpm.
+**Feature 8: Maximum Heart Rate Achieved (thalach)**  Highest heart rate during stress test. A healthy heart beats faster during exercise. Range: 71-202 bpm.
 
-**Feature 9: Exercise-Induced Angina (exang)** — Binary: whether exercise triggered chest pain. Strong indicator of coronary artery disease.
+**Feature 9: Exercise-Induced Angina (exang)**  Binary: whether exercise triggered chest pain. Strong indicator of coronary artery disease.
 
-**Feature 10: ST Depression (oldpeak)** — How much the ST segment dropped during exercise vs rest (in mm). Higher values indicate more severe blood supply problems. Range: 0-6.2 mm.
+**Feature 10: ST Depression (oldpeak)**  How much the ST segment dropped during exercise vs rest (in mm). Higher values indicate more severe blood supply problems. Range: 0-6.2 mm.
 
-**Feature 11: Slope of Peak Exercise ST Segment (slope)** — Shape of ST segment at peak exercise:
+**Feature 11: Slope of Peak Exercise ST Segment (slope)**  Shape of ST segment at peak exercise:
 - Value 0: Upsloping (less concerning)
 - Value 1: Flat (concerning)
 - Value 2: Downsloping (most concerning, strongly associated with disease)
 
-**Feature 12: Major Vessels Colored (ca)** — Number of heart's major vessels showing blockages on fluoroscopy (0-3). More vessels affected = more severe disease.
+**Feature 12: Major Vessels Colored (ca)**  Number of heart's major vessels showing blockages on fluoroscopy (0-3). More vessels affected = more severe disease.
 
-**Feature 13: Thalassemia (thal)** — Thallium stress test results:
+**Feature 13: Thalassemia (thal)**  Thallium stress test results:
 - Value 1: Normal blood flow
 - Value 2: Fixed defect (permanent damage)
 - Value 3: Reversible defect (temporary blood flow reduction)
 
-**Feature 14: Target (target)** — Ground truth label (0 = no disease, 1 = disease) determined by cardiac catheterization (angiography), the gold standard.
+**Feature 14: Target (target)**  Ground truth label (0 = no disease, 1 = disease) determined by cardiac catheterization (angiography), the gold standard.
 
 ---
 
@@ -128,10 +128,10 @@ The key advantage of the UCI dataset is that it contains **stress test results**
 The **Framingham Heart Study** is one of the most important medical studies in history. Started in 1948 in Framingham, Massachusetts, it has followed **three generations** of participants to understand cardiovascular disease.
 
 This study **discovered**:
-- 🔬 The link between **cholesterol** and heart disease
-- 🩺 The dangers of **high blood pressure**
-- 🚬 The cardiovascular effects of **smoking**
-- 💊 The concept of **"risk factors"** (term coined by this study)
+-  The link between **cholesterol** and heart disease
+-  The dangers of **high blood pressure**
+-  The cardiovascular effects of **smoking**
+-  The concept of **"risk factors"** (term coined by this study)
 
 #### Source Information
 
@@ -141,21 +141,21 @@ This study **discovered**:
 | **Source** | [NIH/NHLBI](https://www.framinghamheartstudy.org/) |
 | **Started** | 1948 (still ongoing - 75+ years!) |
 | **Our Subset** | ~11,500 samples |
-| **Target Variable** | `TenYearCHD` → 10-year CHD risk |
+| **Target Variable** | `TenYearCHD`  10-year CHD risk |
 
 #### Core Features (11 Features)
 
-**age** — Primary risk factor (range: 32-70)
-**sex** — 0=Female, 1=Male
-**totChol** — Total cholesterol (107-696 mg/dL)
-**sysBP** — Systolic blood pressure (83-295 mmHg)
-**diaBP** — Diastolic blood pressure (48-142 mmHg)
-**BMI** — Body Mass Index (15-56 kg/m²)
-**heartRate** — Resting heart rate (44-143 bpm)
-**glucose** — Fasting glucose (40-394 mg/dL)
-**currentSmoker** — Binary smoking status
-**diabetes** — Binary diabetes status
-**BPMeds** — Binary: on blood pressure medication
+**age**  Primary risk factor (range: 32-70)
+**sex**  0=Female, 1=Male
+**totChol**  Total cholesterol (107-696 mg/dL)
+**sysBP**  Systolic blood pressure (83-295 mmHg)
+**diaBP**  Diastolic blood pressure (48-142 mmHg)
+**BMI**  Body Mass Index (15-56 kg/m)
+**heartRate**  Resting heart rate (44-143 bpm)
+**glucose**  Fasting glucose (40-394 mg/dL)
+**currentSmoker**  Binary smoking status
+**diabetes**  Binary diabetes status
+**BPMeds**  Binary: on blood pressure medication
 
 #### Engineered Features (24 Additional)
 
@@ -166,7 +166,7 @@ We created additional features using domain knowledge:
 | `pulse_pressure` | SBP - DBP | Arterial stiffness indicator |
 | `map` | DBP + (SBP-DBP)/3 | Mean arterial pressure - organ perfusion |
 | `chol_ratio` | TotalChol / HDL | Bad vs good cholesterol balance |
-| `age_bp_interaction` | Age × SBP | Age amplifies BP damage |
+| `age_bp_interaction` | Age  SBP | Age amplifies BP damage |
 | `metabolic_score` | Composite | Multiple risk factors combined |
 
 ---
@@ -205,10 +205,10 @@ We use **median** instead of mean because medical data often contains outliers:
 
 ```
 Example: Blood Pressure Values
-[120, 125, 130, 135, 300]  ← 300 is a data entry error
+[120, 125, 130, 135, 300]   300 is a data entry error
 
-Mean = (120+125+130+135+300) / 5 = 162  ❌ Biased by outlier!
-Median = 130 (middle value)             ✅ Robust to outliers!
+Mean = (120+125+130+135+300) / 5 = 162   Biased by outlier!
+Median = 130 (middle value)              Robust to outliers!
 ```
 
 **Step 3: Standardization**
@@ -227,7 +227,7 @@ X_scaled = scaler.fit_transform(X)
 
 **Why Split Data?**
 
-If we train and test on the same data, the model memorizes answers instead of learning patterns. This is **overfitting**—great performance on training data, terrible on new patients.
+If we train and test on the same data, the model memorizes answers instead of learning patterns. This is **overfitting**great performance on training data, terrible on new patients.
 
 **Our Split:**
 - **Training (70%):** Model learns from this data
@@ -240,14 +240,14 @@ We ensure each split has the same proportion of disease cases:
 
 ```
 Original: 75.3% healthy, 24.7% disease
-Train:    75.3% healthy, 24.7% disease  ✓
-Valid:    75.3% healthy, 24.7% disease  ✓
-Test:     75.3% healthy, 24.7% disease  ✓
+Train:    75.3% healthy, 24.7% disease  
+Valid:    75.3% healthy, 24.7% disease  
+Test:     75.3% healthy, 24.7% disease  
 ```
 
 ### 2.4 Handling Class Imbalance
 
-Heart disease is relatively rare (~25% of our data). A model predicting "healthy" for everyone would achieve 75% accuracy—but miss every disease case!
+Heart disease is relatively rare (~25% of our data). A model predicting "healthy" for everyone would achieve 75% accuracybut miss every disease case!
 
 **Solution 1: Class Weights**
 ```python
@@ -322,7 +322,7 @@ df['obesity_flag'] = (df['bmi'] >= 30).astype(int)
 - 140/90 mmHg is the hypertension threshold (ACC/AHA Stage 2)
 - 240 mg/dL cholesterol is "high" per ATP III guidelines
 - 126 mg/dL fasting glucose indicates diabetes (ADA criteria)
-- BMI ≥ 30 is clinical obesity (WHO definition)
+- BMI  30 is clinical obesity (WHO definition)
 
 #### Metabolic Syndrome Score (1 feature)
 
@@ -338,7 +338,7 @@ df['metabolic_syndrome_score'] = (
 ```
 
 **Medical Rationale:**
-Metabolic syndrome (score ≥ 3) dramatically increases cardiovascular risk—more than the sum of individual factors. The clustering of these conditions indicates underlying insulin resistance.
+Metabolic syndrome (score  3) dramatically increases cardiovascular riskmore than the sum of individual factors. The clustering of these conditions indicates underlying insulin resistance.
 
 #### Age Groups (5 features - one-hot encoded)
 
@@ -351,7 +351,7 @@ df['age_group_70+'] = (df['age'] >= 70).astype(int)
 ```
 
 **Why Bin Age?**
-Cardiovascular risk isn't linear with age. A 35→40 year transition is less significant than a 55→60 transition. Binning captures these non-linear age effects.
+Cardiovascular risk isn't linear with age. A 3540 year transition is less significant than a 5560 transition. Binning captures these non-linear age effects.
 
 #### BMI Categories (4 features - one-hot encoded)
 
@@ -390,9 +390,9 @@ df['age_smoking_interaction'] = df['age'] * df['smoking']
 ```
 
 **Medical Rationale:**
-- **Age × SBP:** High BP is more dangerous in elderly patients
-- **BMI × Glucose:** Obesity accelerates diabetic complications
-- **Age × Smoking:** Cumulative damage from smoking increases with age
+- **Age  SBP:** High BP is more dangerous in elderly patients
+- **BMI  Glucose:** Obesity accelerates diabetic complications
+- **Age  Smoking:** Cumulative damage from smoking increases with age
 
 ### 3.4 Feature Summary Table
 
@@ -410,7 +410,7 @@ df['age_smoking_interaction'] = df['age'] * df['smoking']
 | Age Groups | 5 bins (one-hot) | 5 |
 | BMI Categories | 4 bins (one-hot) | 4 |
 | Log Transforms | log_cholesterol, log_glucose, log_bmi | 3 |
-| Interactions | age×sbp, bmi×glucose, age×smoking | 3 |
+| Interactions | agesbp, bmiglucose, agesmoking | 3 |
 | **Subtotal: Derived** | | **22** |
 | **TOTAL** | | **34** |
 
@@ -448,7 +448,7 @@ XGBoost does the same with decision trees:
 | **Hardware** | CPU sufficient | Needs GPU |
 | **Interpretability** | Feature importance built-in | Black box |
 
-Our data: **~16,000 samples, 34 tabular features** → XGBoost is optimal.
+Our data: **~16,000 samples, 34 tabular features**  XGBoost is optimal.
 
 ---
 
@@ -459,33 +459,33 @@ Our data: **~16,000 samples, 34 tabular features** → XGBoost is optimal.
 We answer two fundamentally different questions, each requiring a specialized model:
 
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                    CARDIODETECT DUAL MODEL ARCHITECTURE                  │
-├──────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌─────────────────────────────┐    ┌─────────────────────────────┐      │
-│  │     DETECTION MODEL         │    │     PREDICTION MODEL        │      │
-│  │                             │    │                             │      │
-│  │  Question: "Does this       │    │  Question: "What is the     │      │
-│  │  patient have heart         │    │  10-year risk of developing │      │
-│  │  disease RIGHT NOW?"        │    │  heart disease?"            │      │
-│  │                             │    │                             │      │
-│  │  Dataset: UCI Heart Disease │    │  Dataset: Framingham Study  │      │
-│  │  Samples: 303               │    │  Samples: ~11,500           │      │
-│  │  Features: 14               │    │  Features: 35 (11+24)       │      │
-│  │                             │    │                             │      │
-│  │  Key Features:              │    │  Key Features:              │      │
-│  │  • Stress test results      │    │  • BP, Cholesterol, BMI     │      │
-│  │  • Exercise-induced angina  │    │  • Smoking, Diabetes        │      │
-│  │  • ST depression            │    │  • 10-year follow-up data   │      │
-│  │                             │    │                             │      │
-│  │  Architecture: Voting       │    │  Architecture: XGBoost      │      │
-│  │  Ensemble (4 models)        │    │  with threshold tuning      │      │
-│  │                             │    │                             │      │
-│  │  Accuracy: 91.45%           │    │  Accuracy: 94.01%           │      │
-│  └─────────────────────────────┘    └─────────────────────────────┘      │
-│                                                                          │
-└──────────────────────────────────────────────────────────────────────────┘
+
+                    CARDIODETECT DUAL MODEL ARCHITECTURE                  
+
+                                                                          
+            
+       DETECTION MODEL                  PREDICTION MODEL              
+                                                                      
+    Question: "Does this             Question: "What is the           
+    patient have heart               10-year risk of developing       
+    disease RIGHT NOW?"              heart disease?"                  
+                                                                      
+    Dataset: UCI Heart Disease       Dataset: Framingham Study        
+    Samples: 303                     Samples: ~11,500                 
+    Features: 14                     Features: 35 (11+24)             
+                                                                      
+    Key Features:                    Key Features:                    
+     Stress test results             BP, Cholesterol, BMI           
+     Exercise-induced angina         Smoking, Diabetes              
+     ST depression                   10-year follow-up data         
+                                                                      
+    Architecture: Voting             Architecture: XGBoost            
+    Ensemble (4 models)              with threshold tuning            
+                                                                      
+    Accuracy: 91.45%                 Accuracy: 94.01%                 
+            
+                                                                          
+
 ```
 
 ### 4.2 Detection Model: Diagnosing Current Disease
@@ -497,7 +497,7 @@ We answer two fundamentally different questions, each requiring a specialized mo
 **Architecture:** Voting Classifier ensemble of 4 models
 
 **Why Ensemble for Detection?**
-The UCI dataset is small (303 samples). Individual models on small datasets are prone to high variance—small changes in training data cause large changes in predictions. By combining 4 diverse models, we reduce this variance and get more stable, reliable predictions.
+The UCI dataset is small (303 samples). Individual models on small datasets are prone to high variancesmall changes in training data cause large changes in predictions. By combining 4 diverse models, we reduce this variance and get more stable, reliable predictions.
 
 **Performance:**
 - Accuracy: 91.45%
@@ -552,30 +552,30 @@ class MLService:
 Each algorithm in our ensemble has different strengths and makes different types of errors. By combining them, we get the best of all approaches:
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      VOTING CLASSIFIER ENSEMBLE                         │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│     Patient Data                                                        │
-│          │                                                              │
-│          ▼                                                              │
-│    ┌─────┴─────┬─────────────┬─────────────┐                            │
-│    │           │             │             │                            │
-│    ▼           ▼             ▼             ▼                            │
-│ ┌──────┐  ┌──────────┐  ┌───────────┐  ┌───────────┐                    │
-│ │XGBoost│  │LightGBM  │  │Random     │  │Extra      │                   │
-│ │      │  │          │  │Forest     │  │Trees      │                   │
-│ │ 0.72 │  │  0.68    │  │  0.75     │  │  0.70     │  ← Probabilities  │
-│ └──────┘  └──────────┘  └───────────┘  └───────────┘                    │
-│    │           │             │             │                            │
-│    └───────────┴──────┬──────┴─────────────┘                            │
-│                       ▼                                                 │
-│              Average: 0.7125                                            │
-│                       │                                                 │
-│                       ▼                                                 │
-│              Final Prediction: Disease (if ≥ 0.50)                      │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+
+                      VOTING CLASSIFIER ENSEMBLE                         
+
+                                                                         
+     Patient Data                                                        
+                                                                        
+                                                                        
+                                
+                                                                     
+                                                                     
+                           
+ XGBoost  LightGBM    Random       Extra                         
+                     Forest       Trees                         
+  0.72     0.68        0.75         0.70        Probabilities  
+                           
+                                                                     
+                                
+                                                                        
+              Average: 0.7125                                            
+                                                                        
+                                                                        
+              Final Prediction: Disease (if  0.50)                      
+                                                                         
+
 ```
 
 ---
@@ -587,9 +587,9 @@ XGBoost builds trees sequentially, where each new tree corrects the errors of pr
 
 ```
 Tree 1: Initial predictions (many errors)
-    ↓ Calculate residuals (errors)
+     Calculate residuals (errors)
 Tree 2: Trained to predict residuals
-    ↓ Add Tree 2's predictions to Tree 1's
+     Add Tree 2's predictions to Tree 1's
 Tree 3: Trained on remaining errors
     ...
 Final: Sum of all 300 trees
@@ -627,11 +627,11 @@ LightGBM is also gradient boosting, but with two key innovations that make it fa
 
 ```
 XGBoost: Level-wise growth        LightGBM: Leaf-wise growth
-        ┌───┐                            ┌───┐
-     ┌──┴───┴──┐                      ┌──┴───┘
-   ┌─┴─┐   ┌─┴─┐                   ┌──┴──┐
-  ┌┴┐ ┌┴┐ ┌┴┐ ┌┴┐                 ┌┴┐   ┌┴──┐
-                                         ┌┴┐
+                                    
+                           
+                         
+                         
+                                         
 (Balanced tree)                   (Deeper on one side)
 ```
 
@@ -663,14 +663,14 @@ Random Forest builds many decision trees **independently** (not sequentially) an
 
 ```
 Original Data
-     │
-     ├──► Bootstrap Sample 1 ──► Tree 1 ──► Prediction 1
-     │     (Random 70% of data)
-     │
-     ├──► Bootstrap Sample 2 ──► Tree 2 ──► Prediction 2
-     │     (Different random 70%)
-     │
-     └──► Bootstrap Sample 3 ──► Tree 3 ──► Prediction 3
+     
+      Bootstrap Sample 1  Tree 1  Prediction 1
+          (Random 70% of data)
+     
+      Bootstrap Sample 2  Tree 2  Prediction 2
+          (Different random 70%)
+     
+      Bootstrap Sample 3  Tree 3  Prediction 3
                  ...
                  
 Final Prediction = Average(Tree 1, Tree 2, ..., Tree N)
@@ -678,7 +678,7 @@ Final Prediction = Average(Tree 1, Tree 2, ..., Tree N)
 
 **Key Differences from Gradient Boosting:**
 - Trees are built **independently**, not sequentially
-- No learning rate—each tree contributes equally
+- No learning rateeach tree contributes equally
 - More randomness at each step
 
 **Why Include It?**
@@ -712,7 +712,7 @@ Extra Trees is like Random Forest, but with even more randomness:
 Random Forest:              Extra Trees:
 For each split,             For each split,
 find BEST threshold         pick RANDOM threshold
-───────────────             ─────────────────
+             
 Feature X > 5.7 (optimal)   Feature X > 3.2 (random)
 ```
 
@@ -740,7 +740,7 @@ ExtraTreesClassifier(
 **Hard Voting:**
 Each model votes 0 or 1. Majority wins.
 ```
-XGBoost: 1, LightGBM: 0, RF: 1, ET: 1 → Final: 1 (3-1 vote)
+XGBoost: 1, LightGBM: 0, RF: 1, ET: 1  Final: 1 (3-1 vote)
 ```
 Problem: Loses confidence information. A 51% prediction counts the same as 99%.
 
@@ -748,7 +748,7 @@ Problem: Loses confidence information. A 51% prediction counts the same as 99%.
 Average the probabilities, then apply threshold.
 ```
 XGBoost: 0.72, LightGBM: 0.68, RF: 0.75, ET: 0.70
-Average: 0.7125 → Final: 1 (above 0.50 threshold)
+Average: 0.7125  Final: 1 (above 0.50 threshold)
 ```
 Advantage: Captures model confidence. A model that's 99% sure has more influence than one that's 51% sure.
 
@@ -758,11 +758,11 @@ Advantage: Captures model confidence. A model that's 99% sure has more influence
 
 | Model | Individual Accuracy | In Ensemble |
 |-------|---------------------|-------------|
-| XGBoost | 88.2% | ✓ |
-| LightGBM | 87.5% | ✓ |
-| Random Forest | 86.1% | ✓ |
-| Extra Trees | 85.8% | ✓ |
-| **Voting Ensemble** | **91.45%** | — |
+| XGBoost | 88.2% |  |
+| LightGBM | 87.5% |  |
+| Random Forest | 86.1% |  |
+| Extra Trees | 85.8% |  |
+| **Voting Ensemble** | **91.45%** |  |
 
 **Key Insight:** The ensemble outperforms every individual model by 3-5%. This is because different models make different errors, and averaging cancels out model-specific mistakes.
 
@@ -770,7 +770,7 @@ Advantage: Captures model confidence. A model that's 99% sure has more influence
 
 ### 5.8 Advanced: Stacking Classifier
 
-Beyond voting, we also experimented with **Stacking**—a more sophisticated ensemble technique:
+Beyond voting, we also experimented with **Stacking**a more sophisticated ensemble technique:
 
 ```python
 from sklearn.ensemble import StackingClassifier
@@ -791,34 +791,34 @@ stacking = StackingClassifier(
 **How Stacking Works:**
 
 ```
-┌───────────────────────────────────────────────────────────────────────┐
-│                          STACKING CLASSIFIER                          │
-├───────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│     Original Features (34)                                            │
-│              │                                                        │
-│    ┌─────────┼─────────┐                                             │
-│    ▼         ▼         ▼                                             │
-│ ┌──────┐ ┌──────┐ ┌──────┐                                           │
-│ │LightGBM│ │XGBoost│ │HistGB │  ← Level 0: Base Learners             │
-│ │  0.72  │ │ 0.68 │ │ 0.70 │                                         │
-│ └───┬────┘ └───┬──┘ └───┬──┘                                         │
-│     │          │        │                                            │
-│     └────┬─────┼────────┘                                            │
-│          ▼     ▼                                                     │
-│    ┌─────────────────┐                                               │
-│    │ + Original 34   │  ← "passthrough=True" adds original features  │
-│    │   features      │                                               │
-│    └────────┬────────┘                                               │
-│             ▼                                                        │
-│    ┌─────────────────┐                                               │
-│    │Logistic         │  ← Level 1: Meta-Learner                      │
-│    │Regression       │     (learns to combine base predictions)      │
-│    └────────┬────────┘                                               │
-│             ▼                                                        │
-│       Final: 0.71                                                    │
-│                                                                       │
-└───────────────────────────────────────────────────────────────────────┘
+
+                          STACKING CLASSIFIER                          
+
+                                                                       
+     Original Features (34)                                            
+                                                                      
+                                                 
+                                                                   
+                                              
+ LightGBM XGBoost HistGB    Level 0: Base Learners             
+   0.72    0.68   0.70                                          
+                                            
+                                                                   
+                                                 
+                                                                    
+                                                   
+     + Original 34      "passthrough=True" adds original features  
+       features                                                     
+                                                   
+                                                                     
+                                                   
+    Logistic            Level 1: Meta-Learner                      
+    Regression            (learns to combine base predictions)      
+                                                   
+                                                                     
+       Final: 0.71                                                    
+                                                                       
+
 ```
 
 **Why Stacking Outperforms Voting:**
@@ -890,7 +890,7 @@ Unlike random search, Optuna uses **Tree-structured Parzen Estimator (TPE)** whi
 
 ### 7.1 Why K-Fold Cross-Validation?
 
-Splitting data once (train/test) is risky—results depend on which samples happen to be in test. K-Fold averages across multiple splits for reliable estimates.
+Splitting data once (train/test) is riskyresults depend on which samples happen to be in test. K-Fold averages across multiple splits for reliable estimates.
 
 ### 7.2 Stratified K-Fold
 
@@ -900,12 +900,12 @@ Splitting data once (train/test) is risky—results depend on which samples happ
 Original Data: 75% healthy, 25% disease
 
 Standard K-Fold (risky):
-  Fold 1: 80% healthy, 20% disease  ← Unbalanced!
-  Fold 2: 70% healthy, 30% disease  ← Unbalanced!
+  Fold 1: 80% healthy, 20% disease   Unbalanced!
+  Fold 2: 70% healthy, 30% disease   Unbalanced!
 
 Stratified K-Fold (our choice):
-  Fold 1: 75% healthy, 25% disease  ✓
-  Fold 2: 75% healthy, 25% disease  ✓
+  Fold 1: 75% healthy, 25% disease  
+  Fold 2: 75% healthy, 25% disease  
 ```
 
 ### 7.3 Per-Fold Threshold Optimization
@@ -945,7 +945,7 @@ def cross_validate_with_threshold(model, X, y, cv=5):
 
 Classification models output probabilities (e.g., "67% chance of disease"). To make a binary decision, we use a threshold:
 
-**Default:** If probability ≥ 0.50 → "Disease"
+**Default:** If probability  0.50  "Disease"
 
 **Problem:** In medicine, false negatives are catastrophic. Missing a sick patient could kill them. A false positive (healthy patient flagged for testing) is just an inconvenience.
 
@@ -970,7 +970,7 @@ We tested multiple thresholds:
 | 0.50 | 85.00% | 42.10% | 95.23% | Too many misses |
 | 0.40 | 82.50% | 52.30% | 91.45% | Better |
 | 0.30 | 79.20% | 58.90% | 87.32% | Good |
-| **0.25** | **76.84%** | **62.77%** | 83.15% | **✅ Sweet spot** |
+| **0.25** | **76.84%** | **62.77%** | 83.15% | ** Sweet spot** |
 | 0.20 | 73.10% | 68.42% | 78.90% | Too many false alarms |
 
 **Why 0.25:** We catch 63% of disease cases (vs 42% at default). The 8% accuracy drop is acceptable because we're catching 20% more sick patients.
@@ -1026,7 +1026,7 @@ search = RandomizedSearchCV(
 
 ### 8.1 The Black Box Problem
 
-Doctors need to understand WHY a model made a prediction. "The model says you're at risk" isn't acceptable—they need to explain it to patients.
+Doctors need to understand WHY a model made a prediction. "The model says you're at risk" isn't acceptablethey need to explain it to patients.
 
 ### 8.2 SHAP Explanations
 
@@ -1144,11 +1144,11 @@ Invalid requests get clear error messages:
 ```python
 def categorize_risk(self, probability: float):
     if probability < 0.15:
-        return "🟢 LOW", "Routine monitoring"
+        return " LOW", "Routine monitoring"
     elif probability < 0.40:
-        return "🟡 MODERATE", "Lifestyle modifications advised"
+        return " MODERATE", "Lifestyle modifications advised"
     else:
-        return "🔴 HIGH", "Medical consultation recommended"
+        return " HIGH", "Medical consultation recommended"
 ```
 
 ### 9.2 Why These Thresholds?
@@ -1157,9 +1157,9 @@ Based on **ACC/AHA Guidelines** and **Number Needed to Treat (NNT)** analysis:
 
 | Risk Level | 10-Year Risk | Clinical Action |
 |------------|--------------|-----------------|
-| 🟢 LOW | <15% | Lifestyle maintenance only |
-| 🟡 MODERATE | 15-40% | Consider statin therapy |
-| 🔴 HIGH | ≥40% | Aggressive intervention |
+|  LOW | <15% | Lifestyle maintenance only |
+|  MODERATE | 15-40% | Consider statin therapy |
+|  HIGH | 40% | Aggressive intervention |
 
 ---
 
@@ -1186,7 +1186,7 @@ Knowing "65% risk" is useful, but what should the doctor DO? The Clinical Adviso
 BP_CATEGORIES = {
     "Normal": {"sbp": (0, 120), "action": "Maintain lifestyle"},
     "Elevated": {"sbp": (120, 130), "action": "Lifestyle modifications"},
-    "Stage 1 HTN": {"sbp": (130, 140), "action": "Consider medication if risk ≥10%"},
+    "Stage 1 HTN": {"sbp": (130, 140), "action": "Consider medication if risk 10%"},
     "Stage 2 HTN": {"sbp": (140, 180), "action": "Medication + lifestyle"},
     "HTN Crisis": {"sbp": (180, 999), "action": "IMMEDIATE evaluation"},
 }
@@ -1198,7 +1198,7 @@ Personalized advice based on patient data:
 - **Smokers:** "Quit smoking - reduces risk 50% within 1 year"
 - **Exercise:** "150 minutes moderate activity per week"
 - **Diet:** "Limit sodium to 2,300mg/day, emphasize vegetables"
-- **Obesity (BMI≥30):** "5-10% weight loss can reduce BP by 5-20 mmHg"
+- **Obesity (BMI30):** "5-10% weight loss can reduce BP by 5-20 mmHg"
 
 ---
 
@@ -1212,20 +1212,20 @@ Personalized advice based on patient data:
 
 ```
 Milestone_3/
-├── cardiodetect/        # Project settings
-│   ├── settings.py      # Configuration
-│   ├── urls.py          # URL routing
-│   └── middleware.py    # Security middleware
-├── accounts/            # User authentication
-│   ├── models.py        # User model
-│   ├── views.py         # Auth endpoints
-│   └── serializers.py   # Validation
-├── predictions/         # Core ML features
-│   ├── models.py        # Prediction storage
-│   ├── views.py         # API endpoints
-│   └── serializers.py   # Input validation
-└── services/
-    └── ml_service.py    # ML model loading
+ cardiodetect/        # Project settings
+    settings.py      # Configuration
+    urls.py          # URL routing
+    middleware.py    # Security middleware
+ accounts/            # User authentication
+    models.py        # User model
+    views.py         # Auth endpoints
+    serializers.py   # Validation
+ predictions/         # Core ML features
+    models.py        # Prediction storage
+    views.py         # API endpoints
+    serializers.py   # Input validation
+ services/
+     ml_service.py    # ML model loading
 ```
 
 ### 11.2 API Endpoints
@@ -1303,13 +1303,13 @@ function ProtectedRoute({ children }) {
 
 ### 13.1 What Is JWT?
 
-**JSON Web Token (JWT)** is an open standard (RFC 7519) for securely transmitting information. Unlike session-based auth, JWT is **stateless**—the token contains all necessary information.
+**JSON Web Token (JWT)** is an open standard (RFC 7519) for securely transmitting information. Unlike session-based auth, JWT is **stateless**the token contains all necessary information.
 
 ### 13.2 JWT Structure
 
 ```
 eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoiYWJjMTIzIn0.SIGNATURE
-└───── Header ─────┘└────── Payload ──────┘└─────────┘
+ Header  Payload 
 ```
 
 **Header:** Algorithm & type
@@ -1328,7 +1328,7 @@ SIMPLE_JWT = {
 }
 ```
 
-⚠️ **Security Note:** JWTs are encoded, not encrypted. Never put passwords in the payload!
+ **Security Note:** JWTs are encoded, not encrypted. Never put passwords in the payload!
 
 ---
 
@@ -1336,14 +1336,14 @@ SIMPLE_JWT = {
 
 ### 14.1 Why Hash Passwords?
 
-If hackers steal the database, they get hashes—not passwords. Hashing is **one-way**; you cannot reverse it.
+If hackers steal the database, they get hashesnot passwords. Hashing is **one-way**; you cannot reverse it.
 
 ### 14.2 PBKDF2 Process
 
 ```
 "MyPassword123"
-    ↓ + Random Salt
-    ↓ × 600,000 iterations
+     + Random Salt
+      600,000 iterations
 "pbkdf2_sha256$600000$salt$hash..."
 ```
 
@@ -1379,7 +1379,7 @@ self.limits = {
 }
 ```
 
-Exceeded? → HTTP 429 "Too Many Requests"
+Exceeded?  HTTP 429 "Too Many Requests"
 
 ---
 
@@ -1586,14 +1586,14 @@ In a healthcare application, profile changes (especially medical ID, license num
 ### 23.2 Approval Flow
 
 ```
-User submits change → PendingProfileChange created → Admin notified via email
-                                    ↓
+User submits change  PendingProfileChange created  Admin notified via email
+                                    
                     Admin reviews in Admin Panel
-                                    ↓
-                    ┌───────────────┴───────────────┐
-                    ↓                               ↓
+                                    
+                    
+                                                   
               APPROVE                           REJECT
-                    ↓                               ↓
+                                                   
           Change applied to user            User notified with reason
           User notified                      Change record kept for audit
 ```
@@ -1746,8 +1746,8 @@ npm test
 
 **End-to-End Tests:**
 - Complete prediction flow
-- OCR → Prediction → PDF generation
-- User registration → Email verification → Login
+- OCR  Prediction  PDF generation
+- User registration  Email verification  Login
 
 ---
 
@@ -1879,9 +1879,9 @@ if not DEBUG:
 | **ML Models** | XGBoost, LightGBM, Scikit-learn | Latest |
 | **OCR** | Tesseract | 4+ |
 | **PDF Generation** | ReportLab | 4.0+ |
-| **Database** | SQLite (dev) / PostgreSQL (prod) | — |
+| **Database** | SQLite (dev) / PostgreSQL (prod) |  |
 | **Caching** | Redis | 7+ |
-| **Email** | Gmail SMTP | — |
+| **Email** | Gmail SMTP |  |
 
 ## Key Metrics
 
