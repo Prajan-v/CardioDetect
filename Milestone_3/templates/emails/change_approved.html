@@ -1,0 +1,41 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Profile Change Approved - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Profile Change Approved ✅</h1>
+
+<p class="message">
+    Hi {{ first_name|default:"there" }},
+</p>
+
+<p class="message">
+    Great news! Your requested profile change has been <strong style="color: #22c55e;">approved</strong> and applied to
+    your account.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-left: 4px solid #22c55e;">
+    <p style="color: #166534;"><strong>📝 Field Changed:</strong> {{ field_name }}</p>
+    <p style="color: #166534;"><strong>Old Value:</strong> {{ old_value }}</p>
+    <p style="color: #166534;"><strong>New Value:</strong> {{ new_value }}</p>
+    <p style="color: #166534;"><strong>Approved by:</strong> {{ approved_by }}</p>
+</div>
+
+{% if review_notes %}
+<p class="message">
+    <strong>Notes from reviewer:</strong><br>
+    {{ review_notes }}
+</p>
+{% endif %}
+
+<div style="text-align: center;">
+    <a href="{{ dashboard_url }}" class="cta-button">View Your Profile</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    This change was applied on {{ approved_at }}.
+</p>
+{% endblock %}

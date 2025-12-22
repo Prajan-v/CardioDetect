@@ -1,0 +1,30 @@
+{
+  "model_name": "Logistic Regression",
+  "target": "TenYearCHD (actual heart disease outcome)",
+  "accuracy": 0.652122641509434,
+  "precision": 0.2389937106918239,
+  "recall": 0.5891472868217055,
+  "f1": 0.3400447427293065,
+  "roc_auc": 0.6955827969509762,
+  "sensitivity": 0.5891472868217055,
+  "specificity": 0.6634214186369958,
+  "features": [
+    "sex",
+    "age",
+    "smoking",
+    "bp_meds",
+    "hypertension",
+    "diabetes",
+    "total_cholesterol",
+    "systolic_bp",
+    "diastolic_bp",
+    "bmi",
+    "heart_rate",
+    "fasting_glucose",
+    "pulse_pressure",
+    "map",
+    "age_sbp_interaction"
+  ],
+  "trained_at": "2025-12-05T20:27:58.949056",
+  "note": "This model predicts ACTUAL heart disease outcomes, not calculated risk scores"
+}

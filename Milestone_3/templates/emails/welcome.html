@@ -1,0 +1,56 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Welcome to Cardio Detect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Welcome to CardioDetect</h1>
+
+<p class="message">
+    Dear {{ first_name }},<br><br>
+    Thank you for verifying your email address. Your account is now fully active.<br><br>
+    CardioDetect provides you with advanced AI-powered tools for heart disease detection and risk assessment. We are
+    committed to helping you monitor and understand your cardiovascular health.
+</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ login_url }}" class="cta-button" style="text-decoration: none;">
+        Sign In to Dashboard
+    </a>
+</div>
+
+<div class="divider"></div>
+
+<p class="message">
+    <strong>Here's what you can do with Cardio Detect:</strong>
+</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+        <td style="padding: 15px; background: #fef3f2; border-radius: 8px 8px 0 0;">
+            <strong style="color: #dc2626;">🩺 Disease Detection</strong><br>
+            <span style="color: #555555; font-size: 14px;">91.45% accuracy in detecting heart disease</span>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 15px; background: #faf5ff;">
+            <strong style="color: #9333ea;">📊 10-Year Risk Prediction</strong><br>
+            <span style="color: #555555; font-size: 14px;">91.63% accuracy in predicting cardiovascular risk</span>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 15px; background: #f0fdf4; border-radius: 0 0 8px 8px;">
+            <strong style="color: #16a34a;">📄 OCR Report Upload</strong><br>
+            <span style="color: #555555; font-size: 14px;">Upload medical reports for instant analysis</span>
+        </td>
+    </tr>
+</table>
+
+<p class="message">
+    Your health journey starts now. We're here to help you every step of the way.
+</p>
+
+<p style="color: #888888; font-size: 14px; margin-top: 20px;">
+    Best regards,<br>
+    <strong>The Cardio Detect Team</strong>
+</p>
+{% endblock %}

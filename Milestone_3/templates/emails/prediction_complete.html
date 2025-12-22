@@ -1,0 +1,55 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Assessment Results Ready - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Your Assessment Results Are Ready 📊</h1>
+
+<p class="message">
+    Hi {{ first_name }},
+</p>
+
+<p class="message">
+    Your CardioDetect cardiovascular risk assessment has been completed. Here's a summary of your results:
+</p>
+
+<div class="info-box"
+    style="{% if is_high_risk %}background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626;{% else %}background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-left: 4px solid #22c55e;{% endif %}">
+    <p style="{% if is_high_risk %}color: #991b1b;{% else %}color: #166534;{% endif %}">
+        <strong>🎯 Risk Category:</strong>
+        <span style="font-size: 18px; font-weight: bold;">{{ risk_category }}</span>
+    </p>
+    <p style="{% if is_high_risk %}color: #991b1b;{% else %}color: #166534;{% endif %}">
+        <strong>📈 10-Year Risk:</strong> {{ risk_percentage }}%
+    </p>
+    <p style="{% if is_high_risk %}color: #991b1b;{% else %}color: #166534;{% endif %}">
+        <strong>🩺 Detection Result:</strong> {{ detection_result }}
+    </p>
+    <p style="{% if is_high_risk %}color: #991b1b;{% else %}color: #166534;{% endif %}">
+        <strong>📅 Assessment Date:</strong> {{ assessment_date }}
+    </p>
+    <p style="{% if is_high_risk %}color: #991b1b;{% else %}color: #166534;{% endif %}">
+        <strong>📝 Input Method:</strong> {{ input_method }}
+    </p>
+</div>
+
+{% if is_high_risk %}
+<div class="info-box"
+    style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b;">
+    <p style="color: #92400e;">
+        <strong>⚠️ Important:</strong> Your results indicate a higher risk level. We recommend consulting with a
+        healthcare professional for personalized advice.
+    </p>
+</div>
+{% endif %}
+
+<div style="text-align: center;">
+    <a href="{{ dashboard_url }}" class="cta-button">View Full Results</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    💡 Regular health assessments help you stay informed about your cardiovascular health.
+</p>
+{% endblock %}

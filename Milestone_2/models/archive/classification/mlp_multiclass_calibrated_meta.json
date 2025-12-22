@@ -1,0 +1,22 @@
+{
+  "run_id": "multiclass_20251204_230529",
+  "accuracy": 0.9872862779482683,
+  "precision": 0.9866501150055135,
+  "recall": 0.9807889664868751,
+  "f1": 0.9836562742812743,
+  "precision_class_0": 0.9922077922077922,
+  "recall_class_0": 0.9973890339425587,
+  "f1_class_0": 0.9947916666666666,
+  "precision_class_1": 0.9799749687108886,
+  "recall_class_1": 0.9836683417085427,
+  "f1_class_1": 0.9818181818181818,
+  "precision_class_2": 0.9877675840978594,
+  "recall_class_2": 0.9613095238095238,
+  "f1_class_2": 0.9743589743589743,
+  "roc_auc_ovr": 0.9975249539788562,
+  "model_name": "mlp_multiclass_calibrated",
+  "target_type": "3class",
+  "calibrated": true,
+  "saved_at": "2025-12-04T23:05:45.414990",
+  "model_path": "/Users/prajanv/CardioDetect/milestone_2/models/mlp_multiclass_calibrated.pkl"
+}

@@ -1,0 +1,48 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Verify Your Email - Cardio Detect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Welcome to Cardio Detect! 🎉</h1>
+
+<p class="message">
+    Hi {{ first_name }},<br><br>
+    Thank you for creating your Cardio Detect account. We're excited to help you take control of your heart health with
+    AI-powered insights.
+</p>
+
+<p class="message">
+    To complete your registration and unlock all features, please verify your email address:
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ verification_url }}" class="cta-button">
+        ✓ Verify My Email
+    </a>
+</div>
+
+<div class="link-fallback">
+    <strong>Can't click the button?</strong> Copy and paste this link into your browser:<br>
+    <a href="{{ verification_url }}">{{ verification_url }}</a>
+</div>
+
+<div class="info-box">
+    <p>⏰ This verification link will expire in <strong>24 hours</strong>.</p>
+</div>
+
+<div class="divider"></div>
+
+<p class="message">
+    <strong>What's next?</strong>
+</p>
+<ul style="color: #555555; margin-left: 20px; margin-bottom: 20px;">
+    <li>Complete your health profile</li>
+    <li>Upload medical reports or enter data manually</li>
+    <li>Get AI-powered heart disease risk assessment</li>
+    <li>Receive personalized health recommendations</li>
+</ul>
+
+<p class="security-note">
+    🔒 If you didn't create this account, you can safely ignore this email. No action will be taken.
+</p>
+{% endblock %}

@@ -1,0 +1,82 @@
+{
+  "success": true,
+  "risk_score": 0.025828876689698313,
+  "risk_category": "LOW",
+  "recommendation": "Low cardiovascular risk (2.6%). Continue healthy lifestyle practices. Regular check-ups recommended.",
+  "ocr_confidence": {
+    "average": 0.9378160919540229,
+    "per_field": {
+      "hemoglobin": 0.9,
+      "rbc": 0.9,
+      "systolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "glucose": 0.8,
+      "age": 0.9,
+      "sex": 0.8,
+      "smoking": 0.8,
+      "diabetes": 0.8
+    }
+  },
+  "model_confidence": 0.025828876689698313,
+  "fields": {
+    "hemoglobin": 14.6,
+    "rbc": 4.9,
+    "systolic_bp": 150.0,
+    "cholesterol": 245.0,
+    "glucose": 145.0,
+    "age": 32.0,
+    "sex": 1,
+    "smoking": 1.0,
+    "diabetes": 1.0
+  },
+  "fields_used": [
+    "hemoglobin",
+    "rbc",
+    "systolic_bp",
+    "cholesterol",
+    "glucose",
+    "age",
+    "sex",
+    "smoking",
+    "diabetes"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-05T13:04:09.368202",
+    "model_version": "risk_regressor_v2",
+    "document_path": "preprocessed_300.png"
+  },
+  "errors": [],
+  "warnings": [],
+  "explanations": {
+    "top_reasons": [
+      "Current smoking status strongly increases cardiovascular risk.",
+      "Age 32 years is relatively young and lowers cardiovascular risk.",
+      "Diabetes is present and increases cardiovascular risk."
+    ],
+    "details": [
+      {
+        "feature": "smoking",
+        "value": 1.0,
+        "direction": "increases",
+        "strength": 1.5,
+        "text": "Current smoking status strongly increases cardiovascular risk."
+      },
+      {
+        "feature": "age",
+        "value": 32.0,
+        "direction": "decreases",
+        "strength": 1.3,
+        "text": "Age 32 years is relatively young and lowers cardiovascular risk."
+      },
+      {
+        "feature": "diabetes",
+        "value": 1.0,
+        "direction": "increases",
+        "strength": 1.2,
+        "text": "Diabetes is present and increases cardiovascular risk."
+      }
+    ]
+  }
+}

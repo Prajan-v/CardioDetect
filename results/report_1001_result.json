@@ -1,0 +1,75 @@
+{
+  "success": true,
+  "risk_score": 0.24406867125848847,
+  "risk_category": "MODERATE",
+  "recommendation": "Moderate cardiovascular risk (24.4%). Consult healthcare provider for risk factor management. Consider lifestyle modifications and regular monitoring.",
+  "ocr_confidence": {
+    "average": 0.9390000000000001,
+    "per_field": {
+      "systolic_bp": 0.8,
+      "diastolic_bp": 0.9,
+      "cholesterol": 0.8,
+      "glucose": 0.8,
+      "age": 0.9,
+      "sex": 0.8
+    }
+  },
+  "model_confidence": 0.24406867125848847,
+  "fields": {
+    "systolic_bp": 97.0,
+    "diastolic_bp": 86.0,
+    "cholesterol": 125.0,
+    "glucose": 147.0,
+    "age": 81.0,
+    "sex": 1
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "glucose",
+    "age",
+    "sex"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-05T13:50:30.331465",
+    "model_version": "risk_regressor_v2",
+    "document_path": "report_1001.png"
+  },
+  "errors": [],
+  "warnings": [
+    "Safety rule: some essential risk factors were not extracted (e.g., diabetes, fasting_glucose, smoking). Numeric risk may be underestimated."
+  ],
+  "explanations": {
+    "top_reasons": [
+      "Age 81 years is high and increases cardiovascular risk.",
+      "Total cholesterol 125 mg/dL is in a favorable range and lowers risk.",
+      "Systolic blood pressure 97 mmHg is in a healthy range and lowers risk."
+    ],
+    "details": [
+      {
+        "feature": "age",
+        "value": 81.0,
+        "direction": "increases",
+        "strength": 2.6,
+        "text": "Age 81 years is high and increases cardiovascular risk."
+      },
+      {
+        "feature": "total_cholesterol",
+        "value": 125.0,
+        "direction": "decreases",
+        "strength": 1.375,
+        "text": "Total cholesterol 125 mg/dL is in a favorable range and lowers risk."
+      },
+      {
+        "feature": "systolic_bp",
+        "value": 97.0,
+        "direction": "decreases",
+        "strength": 1.15,
+        "text": "Systolic blood pressure 97 mmHg is in a healthy range and lowers risk."
+      }
+    ]
+  }
+}

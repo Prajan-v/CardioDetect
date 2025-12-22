@@ -1,0 +1,70 @@
+{% extends "emails/base.html" %}
+
+{% block title %}⚠️ High Risk Alert - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting" style="color: #dc2626;">⚠️ High Risk Alert</h1>
+
+<p class="message">
+    {% if is_doctor %}
+    Dr. {{ doctor_name }},
+
+    <br><br>
+    Your patient <strong>{{ patient_name }}</strong> ({{ patient_email }}) has received a high-risk cardiovascular
+    assessment.
+    {% else %}
+    Hi {{ first_name|default:"there" }},
+
+    <br><br>
+    Your recent cardiovascular risk assessment indicates a <strong style="color: #dc2626;">high risk level</strong>.
+    {% endif %}
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626;">
+    <p style="color: #991b1b;"><strong>🩺 Risk Category:</strong> {{ risk_category }}</p>
+    <p style="color: #991b1b;"><strong>📊 Risk Percentage:</strong> {{ risk_percentage }}%</p>
+    <p style="color: #991b1b;"><strong>📅 Assessment Date:</strong> {{ assessment_date }}</p>
+    <p style="color: #991b1b;"><strong>📝 Input Method:</strong> {{ input_method }}</p>
+</div>
+
+{% if is_doctor %}
+<p class="message">
+    <strong>Recommended Actions:</strong>
+<ul>
+    <li>Schedule a follow-up appointment with the patient</li>
+    <li>Review their complete prediction history</li>
+    <li>Consider additional diagnostic tests</li>
+</ul>
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ doctor_dashboard_url }}" class="cta-button">View Patient Details</a>
+</div>
+{% else %}
+<p class="message">
+    <strong>What This Means:</strong><br>
+    A high-risk result suggests an elevated probability of cardiovascular events within the next 10 years. <strong>This
+        is not a diagnosis</strong> - please consult with your healthcare provider for proper evaluation.
+</p>
+
+<p class="message">
+    <strong>Recommended Next Steps:</strong>
+<ul>
+    <li>Schedule an appointment with your doctor</li>
+    <li>Discuss lifestyle modifications</li>
+    <li>Consider additional screening tests</li>
+</ul>
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ dashboard_url }}" class="cta-button">View Full Report</a>
+</div>
+{% endif %}
+
+<div class="divider"></div>
+
+<p class="security-note">
+    ⚕️ CardioDetect provides AI-assisted risk assessment and is not a substitute for professional medical advice.
+</p>
+{% endblock %}

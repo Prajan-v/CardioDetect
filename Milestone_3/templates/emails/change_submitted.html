@@ -1,0 +1,39 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Profile Change Submitted - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Profile Change Request Submitted 📝</h1>
+
+<p class="message">
+    Hi {{ first_name }},
+</p>
+
+<p class="message">
+    We've received your request to update your profile information. Your change is now <strong
+        style="color: #f59e0b;">pending admin review</strong>.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b;">
+    <p style="color: #92400e;"><strong>📋 Change Details:</strong></p>
+    <p style="color: #92400e;"><strong>Field:</strong> {{ field_name }}</p>
+    <p style="color: #92400e;"><strong>Current Value:</strong> {{ old_value }}</p>
+    <p style="color: #92400e;"><strong>Requested Value:</strong> {{ new_value }}</p>
+    <p style="color: #92400e;"><strong>Submitted:</strong> {{ submitted_at }}</p>
+</div>
+
+<p class="message">
+    Our team will review your request and you'll receive an email once it's been processed.
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ profile_url }}" class="cta-button">View Your Profile</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    ⏰ Most changes are reviewed within 24-48 hours.
+</p>
+{% endblock %}

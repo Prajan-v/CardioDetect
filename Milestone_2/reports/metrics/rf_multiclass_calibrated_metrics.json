@@ -1,0 +1,21 @@
+{
+  "accuracy": 0.9513371328364753,
+  "precision": 0.9465257211359882,
+  "recall": 0.952239998846235,
+  "f1": 0.9493144749055821,
+  "precision_class_0": 0.9734748010610079,
+  "recall_class_0": 0.95822454308094,
+  "f1_class_0": 0.9657894736842105,
+  "precision_class_1": 0.9244114002478315,
+  "recall_class_1": 0.9371859296482412,
+  "f1_class_1": 0.9307548346849657,
+  "precision_class_2": 0.9416909620991254,
+  "recall_class_2": 0.9613095238095238,
+  "f1_class_2": 0.9513991163475699,
+  "roc_auc_ovr": 0.9941489552414371,
+  "model_name": "rf_multiclass_calibrated",
+  "target_type": "3class",
+  "calibrated": true,
+  "run_name": "rf_multiclass_calibrated",
+  "saved_at": "2025-12-04T23:05:42.306807"
+}

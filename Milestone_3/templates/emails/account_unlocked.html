@@ -1,0 +1,35 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Account Unlocked - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Account Unlocked ✅</h1>
+
+<p class="message">
+    Hi {{ first_name }},
+</p>
+
+<p class="message">
+    Great news! Your CardioDetect account has been <strong style="color: #22c55e;">unlocked</strong> and is now ready to
+    use.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-left: 4px solid #22c55e;">
+    <p style="color: #166534;"><strong>🎉 Unlocked at:</strong> {{ unlocked_at }}</p>
+</div>
+
+<p class="message">
+    You can now sign in to your account and continue using CardioDetect's AI-powered heart health assessment tools.
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ login_url }}" class="cta-button">🔓 Sign In Now</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    💡 Tip: Enable two-factor authentication for extra security on your account.
+</p>
+{% endblock %}

@@ -1,0 +1,18 @@
+{
+  "run_id": "baselines_20251204_230425",
+  "accuracy": 0.9491451117930733,
+  "precision": 0.9491374008241589,
+  "recall": 0.9491553570934319,
+  "f1": 0.9491434598961481,
+  "precision_class_0": 0.9510917030567686,
+  "recall_class_0": 0.9477806788511749,
+  "f1_class_0": 0.949433304272014,
+  "precision_class_1": 0.9471830985915493,
+  "recall_class_1": 0.950530035335689,
+  "f1_class_1": 0.9488536155202821,
+  "roc_auc": 0.98895567508388,
+  "model_name": "lr_binary",
+  "target_type": "binary",
+  "saved_at": "2025-12-04T23:04:35.547039",
+  "model_path": "/Users/prajanv/CardioDetect/milestone_2/models/lr_binary.pkl"
+}

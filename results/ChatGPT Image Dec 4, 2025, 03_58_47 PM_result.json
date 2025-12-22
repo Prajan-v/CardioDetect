@@ -1,0 +1,40 @@
+{
+  "success": true,
+  "risk_score": 0.2385912717582663,
+  "risk_category": "MODERATE",
+  "recommendation": "Moderate cardiovascular risk (23.9%). Consult healthcare provider for risk factor management. Consider lifestyle modifications and regular monitoring.",
+  "ocr_confidence": {
+    "average": 0.90875,
+    "per_field": {
+      "systolic_bp": 0.9,
+      "diastolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "age": 0.9,
+      "sex": 0.8
+    }
+  },
+  "model_confidence": 0.2385912717582663,
+  "fields": {
+    "systolic_bp": 162.0,
+    "diastolic_bp": 98.0,
+    "cholesterol": 276.0,
+    "age": 73.0,
+    "sex": 1
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "age",
+    "sex"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-04T22:17:17.741494",
+    "model_version": "risk_regressor_v2",
+    "document_path": "ChatGPT Image Dec 4, 2025, 03_58_47 PM.png"
+  },
+  "errors": [],
+  "warnings": []
+}

@@ -1,0 +1,21 @@
+{
+  "run_id": "baselines_20251204_230425",
+  "accuracy": 0.943445857080228,
+  "precision": 0.9344720434938588,
+  "recall": 0.9455441918032285,
+  "f1": 0.9397608882303065,
+  "precision_class_0": 0.9758281110116384,
+  "recall_class_0": 0.9486510008703221,
+  "f1_class_0": 0.9620476610767873,
+  "precision_class_1": 0.9102091020910209,
+  "recall_class_1": 0.9296482412060302,
+  "f1_class_1": 0.9198259788688626,
+  "precision_class_2": 0.9173789173789174,
+  "recall_class_2": 0.9583333333333334,
+  "f1_class_2": 0.9374090247452693,
+  "roc_auc_ovr": 0.9945256724701966,
+  "model_name": "rf_3class",
+  "target_type": "3class",
+  "saved_at": "2025-12-04T23:04:26.479635",
+  "model_path": "/Users/prajanv/CardioDetect/milestone_2/models/rf_3class.pkl"
+}

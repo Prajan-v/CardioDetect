@@ -1,0 +1,36 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New Patient Assigned - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">New Patient Assigned 👤</h1>
+
+<p class="message">
+    Hi Dr. {{ doctor_name }},
+</p>
+
+<p class="message">
+    A new patient has been assigned to your care on CardioDetect.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6;">
+    <p style="color: #1e40af;"><strong>👤 Patient Details:</strong></p>
+    <p style="color: #1e40af;"><strong>Name:</strong> {{ patient_name }}</p>
+    <p style="color: #1e40af;"><strong>Email:</strong> {{ patient_email }}</p>
+</div>
+
+<p class="message">
+    You can now view their health assessments and provide personalized recommendations through your doctor dashboard.
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ doctor_dashboard_url }}" class="cta-button">View Doctor Dashboard</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    📊 View patient assessments, track their progress, and receive alerts for high-risk results.
+</p>
+{% endblock %}

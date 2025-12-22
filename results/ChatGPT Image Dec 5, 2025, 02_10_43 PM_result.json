@@ -1,0 +1,72 @@
+{
+  "success": true,
+  "risk_score": 0.12278355792719459,
+  "risk_category": "MODERATE",
+  "recommendation": "Moderate cardiovascular risk (12.3%). Consult healthcare provider for risk factor management. Consider lifestyle modifications and regular monitoring.",
+  "ocr_confidence": {
+    "average": 0.9042857142857144,
+    "per_field": {
+      "systolic_bp": 0.9,
+      "diastolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "age": 0.9,
+      "smoking": 0.8
+    }
+  },
+  "model_confidence": 0.12278355792719459,
+  "fields": {
+    "systolic_bp": 148.0,
+    "diastolic_bp": 92.0,
+    "cholesterol": 238.0,
+    "age": 56.0,
+    "smoking": 1.0
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "age",
+    "smoking"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-05T14:11:18.127925",
+    "model_version": "risk_regressor_v2",
+    "document_path": "ChatGPT Image Dec 5, 2025, 02_10_43 PM.png"
+  },
+  "errors": [],
+  "warnings": [
+    "Safety rule: some essential risk factors were not extracted (e.g., diabetes, fasting_glucose, glucose). Numeric risk may be underestimated."
+  ],
+  "explanations": {
+    "top_reasons": [
+      "Current smoking status strongly increases cardiovascular risk.",
+      "Total cholesterol 238 mg/dL is borderline high and increases risk.",
+      "Systolic blood pressure 148 mmHg is elevated and increases risk."
+    ],
+    "details": [
+      {
+        "feature": "smoking",
+        "value": 1.0,
+        "direction": "increases",
+        "strength": 1.5,
+        "text": "Current smoking status strongly increases cardiovascular risk."
+      },
+      {
+        "feature": "total_cholesterol",
+        "value": 238.0,
+        "direction": "increases",
+        "strength": 1.35,
+        "text": "Total cholesterol 238 mg/dL is borderline high and increases risk."
+      },
+      {
+        "feature": "systolic_bp",
+        "value": 148.0,
+        "direction": "increases",
+        "strength": 0.9,
+        "text": "Systolic blood pressure 148 mmHg is elevated and increases risk."
+      }
+    ]
+  }
+}

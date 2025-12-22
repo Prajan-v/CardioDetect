@@ -1,0 +1,30 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New User Registration - CardioDetect Admin{% endblock %}
+
+{% block content %}
+<h1 class="greeting">New User Registration 👤</h1>
+
+<p class="message">
+    A new user has registered on CardioDetect.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6;">
+    <p style="color: #1e40af;"><strong>📋 User Details:</strong></p>
+    <p style="color: #1e40af;"><strong>Name:</strong> {{ user_name }}</p>
+    <p style="color: #1e40af;"><strong>Email:</strong> {{ user_email }}</p>
+    <p style="color: #1e40af;"><strong>Role:</strong> {{ user_role }}</p>
+    <p style="color: #1e40af;"><strong>Registered:</strong> {{ registered_at }}</p>
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ admin_url }}" class="cta-button">View in Admin Panel</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    🔔 This is an automated notification for CardioDetect administrators.
+</p>
+{% endblock %}

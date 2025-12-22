@@ -1,0 +1,43 @@
+{
+  "success": true,
+  "risk_score": 4.4857752201862315e-05,
+  "risk_category": "LOW",
+  "recommendation": "Low cardiovascular risk (0.0%). Continue healthy lifestyle practices. Regular check-ups recommended.",
+  "ocr_confidence": {
+    "average": 0.94675,
+    "per_field": {
+      "systolic_bp": 0.9,
+      "diastolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "glucose": 0.9,
+      "age": 0.9,
+      "sex": 0.8
+    }
+  },
+  "model_confidence": 4.4857752201862315e-05,
+  "fields": {
+    "systolic_bp": 151.0,
+    "diastolic_bp": 85.0,
+    "cholesterol": 273.0,
+    "glucose": 163.0,
+    "age": 34.0,
+    "sex": 0
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "glucose",
+    "age",
+    "sex"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-04T18:22:36.643486",
+    "model_version": "mlp_v2",
+    "document_path": "report_1002.png"
+  },
+  "errors": [],
+  "warnings": []
+}

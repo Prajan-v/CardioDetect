@@ -1,0 +1,12 @@
+{
+  "model_name": "XGBoost",
+  "accuracy": 0.9162583518930958,
+  "recall": 0.909328683522232,
+  "precision": 0.9254658385093167,
+  "roc_auc": 0.968997289198241,
+  "total_unique_samples": 5385,
+  "techniques_used": [
+    "All PDF Milestone 2 techniques"
+  ],
+  "trained_at": "2025-12-07T14:00:11.548788"
+}

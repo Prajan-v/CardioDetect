@@ -1,0 +1,11 @@
+{
+  "model_type": "Voting Ensemble (XGBoost + LightGBM + RF)",
+  "dataset": "final_risk_dataset_properly_cleaned.csv",
+  "samples": 5653,
+  "features": 28,
+  "accuracy": 0.8054245283018868,
+  "roc_auc": 0.7971564609805714,
+  "threshold": 0.4799999999999998,
+  "split": "70/15/15",
+  "trained_at": "2025-12-07T13:40:07.203173"
+}

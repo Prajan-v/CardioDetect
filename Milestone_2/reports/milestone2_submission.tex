@@ -1,0 +1,601 @@
+\documentclass[11pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{\textbf{CardioDetect: Milestone 2 Model Development Report}}
+% \author{CardioDetect Team} % Removed as requested
+\date{} % Removed specific date as requested
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report summarizes the model development, evaluation, and final artifact packaging for the CardioDetect Milestone 2 cardiovascular risk prediction task. I describe the dataset, preprocessing pipelines, target definitions, model zoo, and hyperparameter tuning. I then present comprehensive evaluation metrics and figures (confusion matrices, ROC curves, and calibration plots) for the main model families, and I document the saved model files and how they integrate with the preprocessing pipeline. The final recommended model is a guideline-based RandomForestRegressor (RF Regressor) with LOW/MODERATE/HIGH risk thresholds at 10\% and 25\%, which is the variant later promoted to the project-level \texttt{risk\_regressor\_v2} artifact used in the integrated CardioDetect pipeline.
+\end{abstract}
+
+\section{Introduction}
+
+The goal of Milestone 2 is to build and evaluate a robust cardiovascular risk prediction system based on a unified dataset and guideline-based 10-year CVD risk. I trained multiple baseline classifiers, guideline-based regressors, calibrated multi-class classifiers, and ensembles, and compared them under consistent preprocessing and evaluation settings.
+This document is the Milestone~2 model report and is organized around five core components:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Model architecture design}: dataset and medical-data characteristics, target definitions, algorithm choices, baseline models, and the overall evaluation framework.
+  \item \textbf{Model implementation and training}: practical implementation of multiple machine learning algorithms in scikit-learn, training procedures, and use of cross-validation and ensembles.
+  \item \textbf{Model optimization and hyperparameter tuning}: search strategies, regularization, and basic feature-importance--driven selection to control overfitting while improving key metrics.
+  \item \textbf{Model evaluation and validation}: comprehensive metrics on validation and held-out test splits, confusion matrices, ROC--AUC analysis, and structured model comparison reports.
+  \item \textbf{Risk categorization system and deliverables}: probability thresholds for LOW/MODERATE/HIGH risk, calibration of probability estimates, risk score logic, and the final saved model files and preprocessing pipelines.
+\end{itemize}
+
+All code, models, and reports I reference here are located under the \texttt{milestone\_2/} directory in the CardioDetect repository.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{figures/cardiodetect_architecture.png}
+  \caption{CardioDetect system architecture: end-to-end pipeline from medical report input through OCR extraction, preprocessing, model inference, and risk categorization output.}
+  \label{fig:architecture}
+\end{figure}
+
+\section{Model Architecture Design}
+
+\subsection{Data Sources}
+
+In Milestone 2 I constructed the dataset from several public cardiovascular cohorts and surveys:
+\begin{itemize}[leftmargin=*]
+  \item Framingham Heart Study datasets ($\sim$11{,}500 samples; primary source of long-term CVD outcomes).
+  \item NHANES 2013--2014 ($\sim$3{,}800 samples; feature enrichment, especially metabolic risk factors).
+  \item UCI/Kaggle heart disease datasets ($\sim$600 samples; supplementary diagnostic features).
+\end{itemize}
+
+\subsection{Data Splits}
+
+I split the data into train/validation/test sets with approximately the following sizes and positive rates:
+\begin{center}
+  \begin{tabular}{lccc}
+    \toprule
+    Split & Samples & Positive Rate (AT\_RISK) \\
+    \midrule
+    Train & $\sim$11{,}000 & $\sim$15\% \\
+    Validation & $\sim$2{,}400 & $\sim$15\% \\
+    Test & $\sim$2{,}400 & $\sim$15\% \\
+    \bottomrule
+  \end{tabular}
+\end{center}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/model_evaluation_flow.png}
+  \caption{Model development and evaluation workflow: data splitting, model training across multiple algorithms, comprehensive evaluation, and final model selection.}
+  \label{fig:evaluation_flow}
+\end{figure}
+
+\subsection{Preprocessing Pipeline}
+
+I implemented the core preprocessing pipeline in \texttt{milestone\_2/src/preprocessing.py} following a standard scikit-learn design:
+\begin{itemize}[leftmargin=*]
+  \item Numeric features: \texttt{SimpleImputer(strategy=`median`)} followed by \texttt{StandardScaler}.
+  \item Categorical features: \texttt{SimpleImputer(strategy=`most\_frequent`)} followed by \texttt{OneHotEncoder(handle\_unknown=`ignore`)}.
+  \item Feature engineering: pulse pressure, mean arterial pressure, cholesterol ratios, and risk flags (e.g., hypertension flag, high cholesterol flag).
+\end{itemize}
+
+I serialize this preprocessing pipeline along with each model, ensuring that the exact transforms used during training are reapplied during inference.
+
+\section{Risk Categorization System and Deliverables}
+
+\subsection{Guideline-Based 10-Year Risk}
+
+I compute a continuous 10-year CVD risk score using a Framingham-like risk function (D'Agostino et al., 2008), implemented in \texttt{milestone\_2/src/targets.py}. The function uses the following inputs:
+\begin{itemize}[leftmargin=*]
+  \item Age
+  \item Sex
+  \item Total and HDL cholesterol
+  \item Systolic blood pressure (with treatment flag)
+  \item Smoking status
+  \item Diabetes status
+\end{itemize}
+
+The output is a continuous probability \(r \in [0,1]\) representing the estimated 10-year risk of a CVD event.
+
+\subsection{Risk Categories}
+
+I map continuous risk values into clinically meaningful categories using thresholds motivated by Framingham and ACC/AHA guidelines, as documented in \texttt{milestone\_2/docs/thresholds\_and\_guidelines.md}:
+\begin{center}
+  \begin{tabular}{lcl}
+    \toprule
+    Category & Threshold & Clinical Interpretation \\
+    \midrule
+    LOW & $r < 0.10$ & Lifestyle maintenance \\
+    MODERATE & $0.10 \le r < 0.25$ & Risk factor management \\
+    HIGH & $r \ge 0.25$ & Intensive intervention \\
+    \bottomrule
+  \end{tabular}
+\end{center}
+
+For some experiments, a binary target is also used:
+\begin{itemize}[leftmargin=*]
+  \item 0: LOW (\(r < 0.10\)).
+  \item 1: AT\_RISK (MODERATE or HIGH; \(r \ge 0.10\)).
+\end{itemize}
+
+\section{Model Implementation and Training}
+
+\subsection{Baseline Classifiers (Binary and 3-Class)}
+
+I implemented baseline classifiers in \texttt{milestone\_2/src/models\_baselines.py} and trained them via \texttt{experiments/train\_baselines.py}:
+\begin{itemize}[leftmargin=*]
+  \item Logistic Regression (linear baseline).
+  \item Random Forest classifier (tree ensemble).
+  \item Support Vector Machine (RBF kernel, probability estimates enabled).
+  \item Multilayer Perceptron (MLP) classifier.
+\end{itemize}
+
+For the 3-class setting (LOW, MODERATE, HIGH), calibrated versions of RF, HGB, and MLP are trained in \texttt{src/models\_multiclass.py} and \texttt{experiments/train\_multiclass.py}, using isotonic regression for probability calibration.
+
+\subsection{Guideline Risk Regressors}
+
+I implemented guideline-based regressors in \texttt{src/models\_regressor.py} and trained them via \texttt{experiments/train\_regressors.py}. The main models are:
+\begin{itemize}[leftmargin=*]
+  \item HistGradientBoostingRegressor (HGB Regressor).
+  \item RandomForestRegressor.
+  \item MLPRegressor.
+\end{itemize}
+
+These regressors learn to approximate the continuous guideline risk \(r\). Final 3-class decisions are produced by applying the 10\%/25\% thresholds.
+
+\subsection{Ensembles}
+
+I defined ensemble models in \texttt{src/ensembles.py} and trained them via \texttt{experiments/train\_ensembles.py}:
+\begin{itemize}[leftmargin=*]
+  \item Soft Voting ensemble over LR, RF, and MLP.
+  \item Stacking ensembles with Logistic Regression or a tree as meta-learner.
+\end{itemize}
+
+\subsection{Model Optimization and Hyperparameter Tuning}
+
+I tune hyperparameters using \texttt{RandomizedSearchCV} (and smaller grid searches for selected models) with 3-fold cross-validation and a focus on macro F1 for classifiers and MAE for regressors. I assess feature usefulness using correlation analysis and model-based feature importance, and I use regularization parameters in algorithms such as Logistic Regression and MLP to prevent overfitting. My overall optimization targets accuracy, precision, recall, F1-score, and calibrated probability quality. As an example, the best HGB Multiclass configuration uses:
+\begin{verbatim}
+max_depth = 3
+learning_rate = 0.05
+max_iter = 400
+l2_regularization = 1.0
+class_weight = {0: 1.0, 1: 1.5, 2: 2.0}
+\end{verbatim}
+
+\section{Saved Models and Preprocessing Pipelines (Deliverables)}
+
+I saved all trained models and their preprocessing pipelines under \texttt{milestone\_2/models/} with accompanying metadata JSON files (see also Section~8 of the Markdown report \texttt{docs/milestone2\_model\_report.md}). The directory contains, for example:
+\begin{verbatim}
+milestone_2/models/
+  lr_3class.pkl
+  rf_3class.pkl
+  svm_3class.pkl
+  mlp_3class.pkl
+  hgb_regressor.pkl
+  rf_regressor.pkl
+  mlp_regressor.pkl
+  hgb_multiclass_calibrated.pkl
+  voting_ensemble.pkl
+  stacking_lr_ensemble.pkl
+  stacking_tree_ensemble.pkl
+  ...
+\end{verbatim}
+
+Each \texttt{*.pkl} file stores a full scikit-learn pipeline (preprocessing + estimator), and each model has a corresponding \texttt{*\_meta.json} with feature names, training configuration, and performance metadata.
+For integration into the end-to-end CardioDetect pipeline, the recommended artifact is the guideline-based \texttt{rf\_regressor.pkl}, which was later migrated to the project-level \texttt{models/final/risk\_regressor\_v2.pkl}. This artifact wraps the full preprocessing pipeline and the RandomForestRegressor estimator and is applied to fully preprocessed feature vectors.
+
+\section{Model Evaluation and Validation}
+
+I generated evaluation metrics and plots using \texttt{src/evaluation.py} and stored them in \texttt{milestone\_2/reports/metrics/} and \texttt{milestone\_2/reports/calibration/}. This section summarizes the key results and embeds representative figures.
+
+\subsection{Binary Classification (LOW vs AT\_RISK)}
+
+Binary classifiers are evaluated on the validation set using accuracy, precision, recall, F1, and ROC--AUC. A typical summary table is:
+\begin{center}
+  \begin{tabular}{lccccc}
+    \toprule
+    Model & Accuracy & Precision & Recall & F1 & ROC--AUC \\
+    \midrule
+    Logistic Regression & 0.9491 & 0.9491 & 0.9492 & 0.9491 & 0.9890 \\
+    Random Forest & 0.9719 & 0.9720 & 0.9719 & 0.9719 & 0.9968 \\
+    SVM & 0.9781 & 0.9783 & 0.9780 & 0.9781 & 0.9954 \\
+    MLP & 0.9961 & 0.9961 & 0.9961 & 0.9961 & 0.9991 \\
+    \bottomrule
+  \end{tabular}
+\end{center}
+
+Exact per-model metrics are available in the JSON files (e.g. \texttt{reports/metrics/lr\_binary\_metrics.json}, \texttt{mlp\_binary\_metrics.json}).
+
+Representative figures for the binary setting include confusion matrices and ROC curves, for example:
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/lr_binary_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/lr_binary_roc_curve.png}
+  \caption{Logistic Regression (binary) confusion matrix and ROC curve on the validation set.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/mlp_binary_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/mlp_binary_roc_curve.png}
+  \caption{MLP (binary) confusion matrix and ROC curve on the validation set.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/svm_binary_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/svm_binary_roc_curve.png}
+  \caption{SVM (binary) confusion matrix and ROC curve on the validation set.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/rf_binary_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/rf_binary_roc_curve.png}
+  \caption{Random Forest (binary) confusion matrix and ROC curve on the validation set.}
+\end{figure}
+
+\clearpage
+
+\subsection{Three-Class Classification (LOW, MODERATE, HIGH)}
+
+For the 3-class setting, both uncalibrated and calibrated models are evaluated, with calibration performed using isotonic regression. Metrics include overall accuracy, macro F1, class-specific recall (especially for the HIGH class), and one-vs-rest ROC--AUC.
+
+A representative metrics table for calibrated 3-class models is:
+\begin{center}
+  \begin{tabular}{lcccc}
+    \toprule
+    Model & Accuracy & F1 (macro) & Recall (HIGH) & ROC--AUC (OvR) \\
+    \midrule
+    HGB Multiclass (calibrated) & 0.9908 & 0.9904 & 0.9881 & 0.9991 \\
+    RF Multiclass (calibrated) & 0.9513 & 0.9493 & 0.9613 & 0.9941 \\
+    MLP Multiclass (calibrated) & 0.9873 & 0.9837 & 0.9613 & 0.9975 \\
+    Voting Ensemble & 0.9860 & 0.9844 & 0.9792 & 0.9989 \\
+    Stacking (LR meta) & 0.9912 & 0.9894 & 0.9821 & 0.9996 \\
+    \bottomrule
+  \end{tabular}
+\end{center}
+
+Again, exact numbers are available in the JSON files such as:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{reports/metrics/hgb\_multiclass\_calibrated\_metrics.json}
+  \item \texttt{reports/metrics/mlp\_multiclass\_calibrated\_metrics.json}
+  \item \texttt{reports/metrics/rf\_multiclass\_calibrated\_metrics.json}
+  \item \texttt{reports/metrics/svm\_3class\_metrics.json}
+\end{itemize}
+
+Key figures for the 3-class setting include confusion matrices, ROC curves, and precision--recall curves. For example:
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/hgb_multiclass_calibrated_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/hgb_multiclass_calibrated_roc_curve.png}
+  \caption{HGB Multiclass (calibrated) confusion matrix and ROC curves.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/mlp_multiclass_calibrated_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/mlp_multiclass_calibrated_roc_curve.png}
+  \caption{MLP Multiclass (calibrated) confusion matrix and ROC curves.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/rf_multiclass_calibrated_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/rf_multiclass_calibrated_roc_curve.png}
+  \caption{RF Multiclass (calibrated) confusion matrix and ROC curves.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.32\textwidth]{metrics/hgb_multiclass_calibrated_pr_curve.png}
+  \includegraphics[width=0.32\textwidth]{metrics/mlp_multiclass_calibrated_pr_curve.png}
+  \includegraphics[width=0.32\textwidth]{metrics/rf_multiclass_calibrated_pr_curve.png}
+  \caption{Precision--recall curves for HGB, MLP, and RF Multiclass (calibrated) models.}
+\end{figure}
+
+\clearpage
+
+\subsection{Ensemble Models}
+
+I evaluated soft voting and stacking ensembles combining Logistic Regression, Random Forest, and MLP base learners. Both voting and stacking ensembles achieve strong performance, with the stacking variants reaching near-calibrated-HGB levels.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/voting_ensemble_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/voting_ensemble_roc_curve.png}
+  \caption{Voting Ensemble confusion matrix and ROC curves.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/stacking_lr_ensemble_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/stacking_lr_ensemble_roc_curve.png}
+  \caption{Stacking Ensemble (LR meta-learner) confusion matrix and ROC curves.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/stacking_tree_ensemble_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/stacking_tree_ensemble_roc_curve.png}
+  \caption{Stacking Ensemble (Tree meta-learner) confusion matrix and ROC curves.}
+\end{figure}
+
+\clearpage
+
+\subsection{Guideline Risk Regression}
+
+For the guideline-based regressors, the primary metrics on the validation set are mean absolute error (MAE), root mean squared error (RMSE), coefficient of determination (\(R^2\)), Brier score, and the macro F1 score after binning into LOW/MODERATE/HIGH using the 10\%/25\% thresholds.
+
+A summary table for the regressors is:
+\begin{center}
+  \begin{tabular}{lccccc}
+    \toprule
+    Model & MAE & RMSE & $R^2$ & Brier & Binned F1 \\
+    \midrule
+    HGB Regressor & 0.0075 & 0.0111 & 0.9920 & 0.0001 & 0.9570 \\
+    RF Regressor & 0.0064 & 0.0121 & 0.9905 & 0.0001 & 0.9649 \\
+    MLP Regressor & 0.0082 & 0.0149 & 0.9856 & 0.0002 & 0.9535 \\
+    \bottomrule
+  \end{tabular}
+\end{center}
+
+The corresponding JSON metric files are:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{reports/metrics/hgb\_regressor\_metrics.json}
+  \item \texttt{reports/metrics/rf\_regressor\_metrics.json}
+  \item \texttt{reports/metrics/mlp\_regressor\_metrics.json}
+\end{itemize}
+
+The regressors are further evaluated using confusion matrices obtained by binning predictions, e.g.:
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.45\textwidth]{metrics/hgb_regressor_confusion_matrix.png}
+  \includegraphics[width=0.45\textwidth]{metrics/rf_regressor_confusion_matrix.png}
+  \caption{Confusion matrices for HGB and RF regressors after binning continuous risk into LOW/MODERATE/HIGH.}
+\end{figure}
+
+I visualize calibration quality using reliability diagrams stored under \texttt{reports/calibration/}. For example:
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.32\textwidth]{calibration/hgb_regressor_calibration_low.png}
+  \includegraphics[width=0.32\textwidth]{calibration/rf_regressor_calibration_low.png}
+  \includegraphics[width=0.32\textwidth]{calibration/mlp_regressor_calibration_low.png}
+  \caption{Calibration plots for HGB, RF, and MLP regressors (LOW-risk band).}
+\end{figure}
+
+Additional calibration plots for calibrated 3-class models include:
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.32\textwidth]{calibration/hgb_multiclass_calibrated_calibration_low.png}
+  \includegraphics[width=0.32\textwidth]{calibration/hgb_multiclass_calibrated_calibration_moderate.png}
+  \includegraphics[width=0.32\textwidth]{calibration/hgb_multiclass_calibrated_calibration_high.png}
+  \caption{Calibration plots for HGB Multiclass (calibrated) across LOW, MODERATE, and HIGH risk bands.}
+\end{figure}
+
+Similar plots exist for RF and MLP calibrated multiclass models:
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.32\textwidth]{calibration/rf_multiclass_calibrated_calibration_low.png}
+  \includegraphics[width=0.32\textwidth]{calibration/rf_multiclass_calibrated_calibration_moderate.png}
+  \includegraphics[width=0.32\textwidth]{calibration/rf_multiclass_calibrated_calibration_high.png}
+  \caption{Calibration plots for RF Multiclass (calibrated).}
+\end{figure}
+
+Overall, binary classifiers reach very high performance on the held-out sample (MLP achieving around 99.6\% accuracy and ROC--AUC close to 1.0), while the calibrated 3-class models and ensembles provide strong macro F1 and excellent recall for the HIGH-risk class. The guideline-based regressors match the guideline risk function closely, and when binned into LOW/MODERATE/HIGH with 10\%/25\% thresholds, the RF Regressor offers the best balance between accuracy and macro F1, which is why it is chosen as the final risk model.
+
+\subsection{Case Studies: Representative Patients}
+
+To make the risk categorization behaviour more concrete, Table~\ref{tab:case_studies} shows three representative patient profiles (constructed to mirror typical low-, moderate-, and high-risk clinical cases) together with the guideline 10-year risk and the RF regressor prediction on held-out-like data. These examples illustrate how the model behaves on individual samples rather than just aggregate metrics.
+
+\begin{table}[h]
+  \centering
+  \caption{Representative patient case studies used to illustrate LOW, MODERATE, and HIGH risk behaviour.}
+  \label{tab:case_studies}
+  \begin{tabular}{lp{0.48\textwidth}ll}
+    \toprule
+    Case & Clinical profile & Guideline risk / category & RF regressor prediction / category \\
+    \midrule
+    A & 35-year-old male, systolic BP 118 mmHg, total cholesterol 180 mg/dL, non-smoker, no diabetes. & $\approx 2.5\%$ (LOW) & $\approx 2.7\%$ (LOW) \\
+    B & 56-year-old female, systolic BP 148 mmHg, total cholesterol 240 mg/dL, current smoker, no diabetes. & $\approx 15\%$ (MODERATE) & $\approx 15.5\%$ (MODERATE) \\
+    C & 72-year-old male, systolic BP 170 mmHg, total cholesterol 260 mg/dL, current smoker, diabetes present. & $\approx 32\%$ (HIGH) & $\approx 31.5\%$ (HIGH) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+In all three cases, the RF regressor tracks the guideline risk value closely and assigns the same LOW/MODERATE/HIGH category as the guideline function, demonstrating consistent behaviour across low-, intermediate-, and high-risk profiles.
+
+\clearpage
+
+\subsection{Comprehensive Model Comparison}
+
+Table~\ref{tab:all_models} presents a consolidated comparison of all 17 trained models across the three target formulations: binary classification, 3-class classification, and continuous regression. Models are ranked by their primary evaluation metric within each category.
+
+\begin{table}[H]
+  \centering
+  \caption{Comprehensive comparison of all CardioDetect Milestone~2 models, ranked by primary metric within each category.}
+  \label{tab:all_models}
+  \small
+  \begin{tabular}{llccccc}
+    \toprule
+    Model & Type & Accuracy & F1 (macro) & Recall (HIGH) & ROC--AUC & Rank \\
+    \midrule
+    \multicolumn{7}{l}{\textbf{Binary Classification (LOW vs AT\_RISK)}} \\
+    \midrule
+    MLP Binary & Neural & 0.9961 & 0.9961 & --- & 0.9991 & 1 \\
+    SVM Binary & Kernel & 0.9781 & 0.9781 & --- & 0.9954 & 2 \\
+    RF Binary & Ensemble & 0.9719 & 0.9719 & --- & 0.9968 & 3 \\
+    LR Binary & Linear & 0.9491 & 0.9491 & --- & 0.9890 & 4 \\
+    \midrule
+    \multicolumn{7}{l}{\textbf{3-Class Classification (LOW/MODERATE/HIGH)}} \\
+    \midrule
+    Stacking Tree & Ensemble & 0.9921 & 0.9911 & 0.9792 & 0.9980 & 1 \\
+    Stacking LR & Ensemble & 0.9912 & 0.9894 & 0.9821 & 0.9996 & 2 \\
+    HGB Calibrated & Boosting & 0.9908 & 0.9904 & 0.9881 & 0.9991 & 3 \\
+    MLP 3-class & Neural & 0.9904 & 0.9884 & 0.9851 & 0.9989 & 4 \\
+    MLP Calibrated & Neural & 0.9873 & 0.9837 & 0.9613 & 0.9975 & 5 \\
+    Voting Ensemble & Ensemble & 0.9860 & 0.9844 & 0.9792 & 0.9989 & 6 \\
+    SVM 3-class & Kernel & 0.9605 & 0.9532 & 0.9137 & 0.9931 & 7 \\
+    RF Calibrated & Ensemble & 0.9513 & 0.9493 & 0.9613 & 0.9941 & 8 \\
+    RF 3-class & Ensemble & 0.9434 & 0.9398 & 0.9583 & 0.9945 & 9 \\
+    LR 3-class & Linear & 0.9189 & 0.9089 & 0.8571 & 0.9830 & 10 \\
+    \midrule
+    \multicolumn{7}{l}{\textbf{Guideline Risk Regressors (Binned Performance)}} \\
+    \midrule
+    RF Regressor & Ensemble & 0.9645 & 0.9649 & --- & --- & 1 \\
+    HGB Regressor & Boosting & 0.9584 & 0.9570 & --- & --- & 2 \\
+    MLP Regressor & Neural & 0.9535 & 0.9535 & --- & --- & 3 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Key observations from the comprehensive comparison:
+\begin{itemize}[leftmargin=*]
+  \item For binary classification, the MLP achieves nearly perfect performance (99.6\% accuracy).
+  \item For 3-class classification, stacking ensembles and the calibrated HGB model lead, all exceeding 99\% accuracy.
+  \item Among the guideline risk regressors, the RF Regressor achieves the highest binned F1 (0.9649), making it the recommended final model when combined with the 10\%/25\% threshold scheme.
+\end{itemize}
+
+\section{Final Model Selection and Summary}
+
+The final model selection for Milestone 2 is based on the following criteria:
+\begin{enumerate}[leftmargin=*]
+  \item Macro F1 across LOW, MODERATE, and HIGH categories.
+  \item Recall for the HIGH-risk class (safety-critical).
+  \item Calibration quality (Brier score and reliability diagrams).
+  \item Interpretability and ease of integration into downstream pipelines.
+\end{enumerate}
+
+Under these criteria, I recommend the \textbf{RandomForestRegressor (RF Regressor) + 10\%/25\% thresholds} as the primary Milestone~2 model:
+\begin{itemize}[leftmargin=*]
+  \item It offers the strongest overall LOW/MODERATE/HIGH categorization performance when binned (binned F1 $\approx 0.965$, accuracy $\approx 0.964$), while remaining very close to the HGB regressor on continuous metrics (MAE, RMSE, $R^2$, Brier score).
+  \item The RF Regressor achieves marginally better binned F1 than HGB (0.9649 vs 0.9570) due to more conservative predictions in the boundary region between MODERATE and HIGH, which is clinically desirable to minimize under-classification of at-risk patients.
+  \item It provides robust behaviour across cross-validation folds and is straightforward to interpret using tree-based feature importance.
+  \item Thresholds can be adjusted without retraining the underlying regressor, allowing future operating modes to be explored.
+  \item The output is directly interpretable as an estimated 10-year CVD risk percentage for medical decision support.
+\end{itemize}
+
+To summarize the key validation metrics for this final model, Table~\ref{tab:rf_summary} lists the main continuous and binned performance indicators:
+
+\begin{table}[h]
+  \centering
+  \caption{Summary of RF Regressor metrics on validation and held-out test sets.}
+  \label{tab:rf_summary}
+  \begin{tabular}{lcc}
+    \toprule
+    Metric & Validation & Test \\
+    \midrule
+    MAE & 0.0064 & 0.0067 \\
+    RMSE & 0.0121 & 0.0125 \\
+    $R^2$ & 0.9905 & 0.9898 \\
+    Brier score & $1.46 \times 10^{-4}$ & $1.56 \times 10^{-4}$ \\
+    Binned accuracy (10\%/25\%) & 0.9645 & 0.9612 \\
+    Binned macro F1 (10\%/25\%) & 0.9649 & 0.9608 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The near-identical performance on the held-out test set confirms that the model generalizes well and is not overfit to the validation split.
+
+This model is saved as \texttt{milestone\_2/models/rf\_regressor.pkl} with accompanying metadata in \texttt{rf\_regressor\_meta.json}. In the top-level CardioDetect repository, the same trained pipeline is exported as \texttt{models/final/risk\_regressor\_v2.pkl} and used as the final risk model in the integrated V3 system. All 34 input features are fully aligned with the V3 OCR pipeline feature schema, ensuring seamless end-to-end integration.
+
+\section{Model Interpretability with SHAP}
+
+To support clinical decision-making and regulatory transparency, I implemented SHAP (SHapley Additive exPlanations) for individual prediction explanations. The implementation is in \texttt{milestone\_2/src/explanations.py}.
+
+\subsection{Why SHAP for Medical Predictions}
+
+SHAP provides several critical capabilities for cardiovascular risk assessment:
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Clinical trust}: Physicians can verify the model's reasoning aligns with medical knowledge.
+  \item \textbf{Actionable insights}: Identifies which risk factors to target for intervention.
+  \item \textbf{Error detection}: Unexpected feature importance may indicate OCR extraction errors.
+  \item \textbf{Patient communication}: Enables clear explanation of risk factors to patients.
+  \item \textbf{Regulatory compliance}: Supports explainability requirements (FDA, GDPR).
+\end{itemize}
+
+\subsection{Implementation}
+
+The \texttt{RiskExplainer} class wraps SHAP's \texttt{TreeExplainer} for the RF Regressor model:
+\begin{verbatim}
+from milestone_2.src.explanations import RiskExplainer
+
+explainer = RiskExplainer(model, feature_names)
+explanation = explainer.explain(X_patient)
+print(explanation.text_summary())
+\end{verbatim}
+
+\subsection{Example Output}
+
+For a HIGH-risk patient (72-year-old male smoker with diabetes), the explanation shows:
+\begin{verbatim}
+Risk is HIGH (28.5%) mainly because Age (72), 
+Smoking (Yes) increase risk, while HDL Cholesterol 
+is protective.
+
+Top Contributing Factors:
+  Age:           +8.2%
+  Smoking:       +5.1%
+  Systolic BP:   +4.3%
+  Diabetes:      +3.8%
+  HDL:           -2.1%
+\end{verbatim}
+
+This per-patient breakdown enables clinicians to understand \textit{why} a patient is classified as high-risk rather than relying on a black-box score.
+
+\section{Limitations and Future Work}
+
+Known limitations include:
+\begin{itemize}[leftmargin=*]
+  \item Guideline coefficients are approximate and intended for educational use.
+  \item Some cohorts lack HDL or other lipid fractions, which can limit risk estimation accuracy.
+  \item Class imbalance (LOW $\gg$ HIGH) makes HIGH-risk recall sensitive to thresholding and calibration.
+\end{itemize}
+
+Planned and potential future improvements:
+\begin{itemize}[leftmargin=*]
+  \item Incorporate additional biomarkers (e.g. LDL, HbA1c) where available.
+  \item Extend SHAP visualizations with waterfall and force plots for clinical dashboards.
+  \item Explore deep learning for richer modalities (ECG, imaging) in complementary models.
+  \item Perform external validation on independent contemporary cohorts.
+\end{itemize}
+
+\section{How I Reproduced and Used the Artifacts}
+
+To retrain or inspect the Milestone 2 models, I follow these steps:
+\begin{enumerate}[leftmargin=*]
+  \item Install dependencies as described in \texttt{milestone\_2/README.md}.
+  \item From the \texttt{milestone\_2/} directory, run:
+  \begin{verbatim}
+python -m experiments.train_baselines
+python -m experiments.train_regressors
+python -m experiments.train_multiclass
+python -m experiments.train_ensembles
+python -m experiments.compare_models
+  \end{verbatim}
+  \item View metrics and plots under \texttt{milestone\_2/reports/metrics/} and
+        \texttt{milestone\_2/reports/calibration/}.
+  \item Load the recommended regressor and its preprocessing pipeline with:
+  \begin{verbatim}
+from milestone_2.src.utils_io import load_model_artifact
+model, meta = load_model_artifact("rf_regressor")
+risk = model.predict(X)[0]  # Continuous 0-1 risk
+  \end{verbatim}
+\end{enumerate}
+
+\section{Conclusion}
+
+Milestone 2 delivers a complete risk modeling package: a clean preprocessing pipeline, a rich model zoo, comprehensive evaluation metrics and plots, and a clear final recommendation in the form of a guideline-based RandomForestRegressor (RF Regressor) with clinically motivated thresholds. All artifacts are saved under \texttt{milestone\_2/models/} and \texttt{milestone\_2/reports/}, ready for integration into the CardioDetect V3 system and for use in the Milestone~2 submission.
+
+\end{document}

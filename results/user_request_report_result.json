@@ -1,0 +1,52 @@
+{
+  "success": true,
+  "risk_score": 0.8421876146102186,
+  "risk_category": "HIGH",
+  "recommendation": "High cardiovascular risk (84.2%). Immediate medical consultation recommended. Comprehensive cardiovascular evaluation and intervention may be needed.",
+  "ocr_confidence": {
+    "average": 0.9429411764705883,
+    "per_field": {
+      "hemoglobin": 0.9,
+      "rbc": 0.9,
+      "systolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "glucose": 0.8,
+      "age": 0.9,
+      "sex": 0.8,
+      "smoking": 0.8,
+      "diabetes": 0.8
+    }
+  },
+  "model_confidence": 0.8421876146102186,
+  "fields": {
+    "hemoglobin": 14.5,
+    "rbc": 4.8,
+    "systolic_bp": 140.0,
+    "cholesterol": 220.0,
+    "glucose": 95.0,
+    "age": 60.0,
+    "sex": 1,
+    "smoking": 0.0,
+    "diabetes": 0.0
+  },
+  "fields_used": [
+    "hemoglobin",
+    "rbc",
+    "systolic_bp",
+    "cholesterol",
+    "glucose",
+    "age",
+    "sex",
+    "smoking",
+    "diabetes"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-04T21:18:20.969734",
+    "model_version": "mlp_v2",
+    "document_path": "user_request_report.png"
+  },
+  "errors": [],
+  "warnings": []
+}

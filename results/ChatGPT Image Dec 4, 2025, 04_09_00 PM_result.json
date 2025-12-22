@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "risk_score": 0.016739597428326262,
+  "risk_category": "LOW",
+  "recommendation": "Low cardiovascular risk (1.7%). Continue healthy lifestyle practices. Regular check-ups recommended.",
+  "ocr_confidence": {
+    "average": 0.9103061224489796,
+    "per_field": {
+      "systolic_bp": 0.9,
+      "diastolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "age": 0.9,
+      "sex": 0.8
+    }
+  },
+  "model_confidence": 0.016739597428326262,
+  "fields": {
+    "systolic_bp": 142.0,
+    "diastolic_bp": 88.0,
+    "cholesterol": 212.0,
+    "age": 69.0,
+    "sex": 1
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "age",
+    "sex"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-05T12:59:20.925590",
+    "model_version": "risk_regressor_v2",
+    "document_path": "ChatGPT Image Dec 4, 2025, 04_09_00 PM.png"
+  },
+  "errors": [],
+  "warnings": [],
+  "explanations": {
+    "top_reasons": [
+      "Age 69 years is high and increases cardiovascular risk.",
+      "Total cholesterol 212 mg/dL is borderline high and increases risk.",
+      "Systolic blood pressure 142 mmHg is elevated and increases risk."
+    ],
+    "details": [
+      {
+        "feature": "age",
+        "value": 69.0,
+        "direction": "increases",
+        "strength": 1.4,
+        "text": "Age 69 years is high and increases cardiovascular risk."
+      },
+      {
+        "feature": "total_cholesterol",
+        "value": 212.0,
+        "direction": "increases",
+        "strength": 0.7,
+        "text": "Total cholesterol 212 mg/dL is borderline high and increases risk."
+      },
+      {
+        "feature": "systolic_bp",
+        "value": 142.0,
+        "direction": "increases",
+        "strength": 0.6,
+        "text": "Systolic blood pressure 142 mmHg is elevated and increases risk."
+      }
+    ]
+  }
+}

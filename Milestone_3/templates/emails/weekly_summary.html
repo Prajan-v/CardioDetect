@@ -1,0 +1,53 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Weekly Health Summary - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Your Weekly Health Summary 📊</h1>
+
+<p class="message">
+    Hi {{ first_name }},
+</p>
+
+<p class="message">
+    Here's your weekly CardioDetect activity summary for <strong>{{ week_start }} - {{ week_end }}</strong>.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #0ea5e9;">
+    <p style="color: #0369a1;"><strong>📈 This Week's Activity:</strong></p>
+    <p style="color: #0369a1;"><strong>Assessments Completed:</strong> {{ predictions_count }}</p>
+    <p style="color: #0369a1;"><strong>Latest Risk Status:</strong> {{ latest_risk }}</p>
+</div>
+
+<p class="message">
+    Regular health monitoring is key to maintaining good cardiovascular health. Keep up the great work!
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ dashboard_url }}" class="cta-button">View Your Dashboard</a>
+</div>
+
+<div class="divider"></div>
+
+<table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+    <tr>
+        <td style="padding: 15px; background: #fef3f2; border-radius: 8px 8px 0 0;">
+            <strong style="color: #dc2626;">💪 Health Tip</strong><br>
+            <span style="color: #555555; font-size: 14px;">Aim for at least 150 minutes of moderate exercise per week
+                for optimal heart health.</span>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 15px; background: #f0fdf4; border-radius: 0 0 8px 8px;">
+            <strong style="color: #16a34a;">🥗 Nutrition Tip</strong><br>
+            <span style="color: #555555; font-size: 14px;">Include more fiber-rich foods like oats, beans, and
+                vegetables in your diet.</span>
+        </td>
+    </tr>
+</table>
+
+<p class="security-note">
+    📧 You're receiving this because you have an active CardioDetect account. Manage your email preferences in Settings.
+</p>
+{% endblock %}

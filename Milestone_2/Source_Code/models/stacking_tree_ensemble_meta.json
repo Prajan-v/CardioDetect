@@ -1,0 +1,19 @@
+{
+  "run_id": "ensembles_20251207_180134",
+  "accuracy": 0.7333333333333333,
+  "precision": 0.73,
+  "recall": 0.73,
+  "f1": 0.73,
+  "precision_class_0": 0.7,
+  "recall_class_0": 0.7,
+  "f1_class_0": 0.7,
+  "precision_class_1": 0.76,
+  "recall_class_1": 0.76,
+  "f1_class_1": 0.76,
+  "roc_auc": 0.757,
+  "model_name": "stacking_tree_ensemble",
+  "target_type": "binary",
+  "ensemble_type": "stacking",
+  "saved_at": "2025-12-07T18:01:38.621418",
+  "model_path": "/Users/prajanv/CardioDetect/Milestone_2/Source_Code/models/stacking_tree_ensemble.pkl"
+}

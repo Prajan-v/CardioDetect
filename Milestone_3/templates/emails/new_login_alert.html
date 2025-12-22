@@ -1,0 +1,38 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New Login Alert - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">New Login Detected 🔔</h1>
+
+<p class="message">
+    Hi {{ first_name }},
+</p>
+
+<p class="message">
+    We noticed a new sign-in to your CardioDetect account. If this was you, no action is needed.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b;">
+    <p style="color: #92400e;"><strong>📍 Login Details:</strong></p>
+    <p style="color: #92400e;"><strong>Time:</strong> {{ login_time }}</p>
+    <p style="color: #92400e;"><strong>IP Address:</strong> {{ ip_address }}</p>
+    <p style="color: #92400e;"><strong>Location:</strong> {{ location }}</p>
+    <p style="color: #92400e;"><strong>Device:</strong> {{ device }}</p>
+</div>
+
+<div class="divider"></div>
+
+<p class="message">
+    <strong>Wasn't you?</strong> If you didn't sign in recently, your account may be compromised.
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ security_url }}" class="cta-button" style="background: #dc2626;">🔒 Secure My Account</a>
+</div>
+
+<p class="security-note">
+    For your security, we recommend enabling two-factor authentication in your account settings.
+</p>
+{% endblock %}

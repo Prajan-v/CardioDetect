@@ -1,0 +1,39 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Account Locked - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Account Locked 🔒</h1>
+
+<p class="message">
+    Hi {{ first_name }},
+</p>
+
+<p class="message">
+    Your CardioDetect account has been <strong style="color: #dc2626;">temporarily locked</strong> for security reasons.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626;">
+    <p style="color: #991b1b;"><strong>⚠️ Reason:</strong> {{ reason }}</p>
+    <p style="color: #991b1b;"><strong>Locked at:</strong> {{ locked_at }}</p>
+</div>
+
+<p class="message">
+    If this was you trying to sign in, you can unlock your account by resetting your password:
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ unlock_url }}" class="cta-button">🔓 Reset Password & Unlock</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="message">
+    <strong>Need help?</strong> If you're having trouble accessing your account, please contact our support team.
+</p>
+
+<p class="security-note">
+    📧 Support: {{ support_email }}
+</p>
+{% endblock %}

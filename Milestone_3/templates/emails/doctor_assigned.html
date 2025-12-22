@@ -1,0 +1,38 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Doctor Assigned - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Your Doctor Has Been Assigned 👨‍⚕️</h1>
+
+<p class="message">
+    Hi {{ patient_name }},
+</p>
+
+<p class="message">
+    Great news! A healthcare professional has been assigned to monitor your CardioDetect health assessments.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6;">
+    <p style="color: #1e40af;"><strong>👨‍⚕️ Your Doctor:</strong></p>
+    <p style="color: #1e40af;"><strong>Name:</strong> Dr. {{ doctor_name }}</p>
+    <p style="color: #1e40af;"><strong>Specialization:</strong> {{ doctor_specialization }}</p>
+    <p style="color: #1e40af;"><strong>Hospital:</strong> {{ doctor_hospital }}</p>
+</div>
+
+<p class="message">
+    Your assigned doctor will now have access to your health assessments and can provide personalized recommendations
+    based on your results.
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ dashboard_url }}" class="cta-button">View Your Dashboard</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    🔒 Your health data is protected and only shared with your assigned healthcare providers.
+</p>
+{% endblock %}

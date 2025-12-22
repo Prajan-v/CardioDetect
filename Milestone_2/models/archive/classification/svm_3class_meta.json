@@ -1,0 +1,21 @@
+{
+  "run_id": "baselines_20251204_230425",
+  "accuracy": 0.9605436212187637,
+  "precision": 0.9593916619778687,
+  "recall": 0.947486913930588,
+  "f1": 0.9531999066179818,
+  "precision_class_0": 0.9700854700854701,
+  "recall_class_0": 0.9878154917319408,
+  "f1_class_0": 0.9788702026735662,
+  "precision_class_1": 0.9457070707070707,
+  "recall_class_1": 0.9409547738693468,
+  "f1_class_1": 0.9433249370277078,
+  "precision_class_2": 0.9623824451410659,
+  "recall_class_2": 0.9136904761904762,
+  "f1_class_2": 0.9374045801526718,
+  "roc_auc_ovr": 0.9931092962335423,
+  "model_name": "svm_3class",
+  "target_type": "3class",
+  "saved_at": "2025-12-04T23:04:34.261518",
+  "model_path": "/Users/prajanv/CardioDetect/milestone_2/models/svm_3class.pkl"
+}

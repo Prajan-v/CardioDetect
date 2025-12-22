@@ -1,8 +1,0 @@
-Single Model Performance Report
-===============================
-Accuracy:  0.8049
-Recall:    0.5765
-Precision: 0.6652
-F1-Score:  0.6176
-ROC-AUC:   0.8092
-Threshold: 0.3910

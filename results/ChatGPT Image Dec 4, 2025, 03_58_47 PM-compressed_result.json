@@ -1,0 +1,70 @@
+{
+  "success": true,
+  "risk_score": 0.02017821523176658,
+  "risk_category": "LOW",
+  "recommendation": "Low cardiovascular risk (2.0%). Continue healthy lifestyle practices. Regular check-ups recommended.",
+  "ocr_confidence": {
+    "average": 0.9216964285714286,
+    "per_field": {
+      "systolic_bp": 0.9,
+      "diastolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "age": 0.9,
+      "sex": 0.8
+    }
+  },
+  "model_confidence": 0.02017821523176658,
+  "fields": {
+    "systolic_bp": 162.0,
+    "diastolic_bp": 98.0,
+    "cholesterol": 276.0,
+    "age": 73.0,
+    "sex": 1
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "age",
+    "sex"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "pdf-scanned",
+    "timestamp": "2025-12-05T12:59:06.356850",
+    "model_version": "risk_regressor_v2",
+    "document_path": "ChatGPT Image Dec 4, 2025, 03_58_47 PM-compressed.pdf"
+  },
+  "errors": [],
+  "warnings": [],
+  "explanations": {
+    "top_reasons": [
+      "Age 73 years is high and increases cardiovascular risk.",
+      "Total cholesterol 276 mg/dL is high and increases cardiovascular risk.",
+      "Systolic blood pressure 162 mmHg is severely elevated and increases risk."
+    ],
+    "details": [
+      {
+        "feature": "age",
+        "value": 73.0,
+        "direction": "increases",
+        "strength": 1.8,
+        "text": "Age 73 years is high and increases cardiovascular risk."
+      },
+      {
+        "feature": "total_cholesterol",
+        "value": 276.0,
+        "direction": "increases",
+        "strength": 1.7000000000000002,
+        "text": "Total cholesterol 276 mg/dL is high and increases cardiovascular risk."
+      },
+      {
+        "feature": "systolic_bp",
+        "value": 162.0,
+        "direction": "increases",
+        "strength": 1.1,
+        "text": "Systolic blood pressure 162 mmHg is severely elevated and increases risk."
+      }
+    ]
+  }
+}

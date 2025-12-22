@@ -1,16 +1,34 @@
-﻿numpy
+﻿# Core dependencies
+numpy
 pandas
 scikit-learn
 matplotlib
 seaborn
 joblib
+
+# OCR dependencies
 pytesseract
 pdf2image
 opencv-python-headless
+Pillow
+
+# ML/Model dependencies
 xgboost
 lightgbm
 optuna
-requests
-imbalanced-learn
 torch
-catboost
+imbalanced-learn
+
+# Utilities
+requests
+reportlab
+scipy
+
+# Optional: SHAP explanations (slower but more accurate)
+# shap
+
+# Optional: EasyOCR fallback (downloads ~100MB models)
+# easyocr
+
+# Testing
+pytest

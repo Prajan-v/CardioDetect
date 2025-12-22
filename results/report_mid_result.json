@@ -1,0 +1,43 @@
+{
+  "success": true,
+  "risk_score": 0.13477792398377855,
+  "risk_category": "MODERATE",
+  "recommendation": "Moderate cardiovascular risk (13.5%). Consult healthcare provider for risk factor management. Consider lifestyle modifications and regular monitoring.",
+  "ocr_confidence": {
+    "average": 0.93425,
+    "per_field": {
+      "systolic_bp": 0.9,
+      "diastolic_bp": 0.8,
+      "cholesterol": 0.9,
+      "glucose": 0.9,
+      "age": 0.9,
+      "sex": 0.8
+    }
+  },
+  "model_confidence": 0.13477792398377855,
+  "fields": {
+    "systolic_bp": 164.0,
+    "diastolic_bp": 62.0,
+    "cholesterol": 275.0,
+    "glucose": 200.0,
+    "age": 58.0,
+    "sex": 1
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "glucose",
+    "age",
+    "sex"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-04T22:10:02.770154",
+    "model_version": "risk_regressor_v2",
+    "document_path": "report_mid.png"
+  },
+  "errors": [],
+  "warnings": []
+}

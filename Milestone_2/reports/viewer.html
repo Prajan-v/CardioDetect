@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CardioDetect - Barcode Scanner</title>
+    <link rel="manifest"
+        href="data:application/json,{&quot;name&quot;:&quot;CardioDetect&quot;,&quot;short_name&quot;:&quot;CD Scan&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;theme_color&quot;:&quot;%231a365d&quot;}">
+    <meta name="theme-color" content="#1a365d">
+    <script src="https://cdn.jsdelivr.net/npm/@aspect-dev/quagga@0.0.3/dist/quagga.min.js"></script>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2b6cb0;
+            --success: #38a169;
+            --success-bg: #c6f6d5;
+            --warning: #ed8936;
+            --warning-bg: #feebc8;
+            --danger: #e53e3e;
+            --danger-bg: #fed7d7;
+            --gray-50: #f7fafc;
+            --gray-100: #edf2f7;
+            --gray-200: #e2e8f0;
+            --gray-500: #718096;
+            --gray-700: #4a5568;
+            --gray-900: #1a202c
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            min-height: 100vh;
+            color: #fff
+        }
+
+        /* Lock Screen */
+        .lock-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary), #0d1117);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1.5rem
+        }
+
+        .lock-screen.hidden {
+            display: none
+        }
+
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem
+        }
+
+        .lock-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: .5rem
+        }
+
+        .lock-subtitle {
+            font-size: .85rem;
+            opacity: .8;
+            margin-bottom: 1.5rem;
+            text-align: center
+        }
+
+        .device-id {
+            background: rgba(255, 255, 255, .1);
+            padding: .5rem 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            margin-bottom: 1.5rem;
+            font-size: .8rem
+        }
+
+        .pin-group {
+            display: flex;
+            gap: .4rem;
+            margin-bottom: 1.5rem
+        }
+
+        .pin-digit {
+            width: 45px;
+            height: 55px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: 2px solid rgba(255, 255, 255, .3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .1);
+            color: #fff
+        }
+
+        .pin-digit:focus {
+            outline: none;
+            border-color: #fff;
+            background: rgba(255, 255, 255, .2)
+        }
+
+        .lock-btn {
+            background: #fff;
+            color: var(--primary);
+            border: none;
+            padding: .75rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer
+        }
+
+        .lock-error {
+            color: #fc8181;
+            margin-top: 1rem;
+            font-size: .85rem
+        }
+
+        /* Main App */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh
+        }
+
+        /* Header */
+        .header {
+            padding: .75rem 1rem;
+            background: rgba(0, 0, 0, .3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-weight: 700;
+            font-size: 1.1rem
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #e53e3e, #ed8936);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem
+        }
+
+        .header-btns {
+            display: flex;
+            gap: .5rem
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, .1);
+            border: none;
+            border-radius: 6px;
+            width: 36px;
+            height: 36px;
+            font-size: 1rem;
+            cursor: pointer
+        }
+
+        /* Camera View */
+        .camera-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #000
+        }
+
+        #interactive {
+            width: 100%;
+            height: 100%
+        }
+
+        #interactive video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover
+        }
+
+        #interactive canvas {
+            display: none
+        }
+
+        /* Scan Frame Overlay */
+        .scan-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none
+        }
+
+        .scan-frame {
+            width: 85%;
+            max-width: 350px;
+            height: 120px;
+            border: 3px solid rgba(255, 255, 255, .5);
+            border-radius: 12px;
+            position: relative
+        }
+
+        .scan-frame::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 20%;
+            right: 20%;
+            height: 4px;
+            background: #38a169;
+            border-radius: 2px;
+            animation: scanLine 2s infinite
+        }
+
+        @keyframes scanLine {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .3
+            }
+        }
+
+        .scan-hint {
+            margin-top: 1rem;
+            font-size: .85rem;
+            opacity: .8;
+            text-align: center;
+            padding: 0 1rem
+        }
+
+        /* Result Panel */
+        .result-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, .95) 80%, transparent);
+            padding: 1.5rem 1rem;
+            transform: translateY(100%);
+            transition: transform .3s ease
+        }
+
+        .result-panel.show {
+            transform: translateY(0)
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: 1rem
+        }
+
+        .result-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem
+        }
+
+        .result-icon.success {
+            background: var(--success-bg);
+            color: #22543d
+        }
+
+        .result-icon.warning {
+            background: var(--warning-bg);
+            color: #744210
+        }
+
+        .result-icon.error {
+            background: var(--danger-bg);
+            color: #742a2a
+        }
+
+        .result-title {
+            font-weight: 700;
+            font-size: 1.1rem
+        }
+
+        .result-subtitle {
+            font-size: .8rem;
+            opacity: .7
+        }
+
+        .result-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem
+        }
+
+        .data-item {
+            background: rgba(255, 255, 255, .1);
+            padding: .6rem;
+            border-radius: 8px
+        }
+
+        .data-label {
+            font-size: .65rem;
+            opacity: .6;
+            text-transform: uppercase;
+            margin-bottom: .2rem
+        }
+
+        .data-value {
+            font-weight: 600;
+            font-size: .9rem
+        }
+
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            padding: .4rem .8rem;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: .8rem
+        }
+
+        .risk-badge.high {
+            background: var(--danger);
+            color: #fff
+        }
+
+        .risk-badge.moderate {
+            background: var(--warning);
+            color: #000
+        }
+
+        .risk-badge.low {
+            background: var(--success);
+            color: #fff
+        }
+
+        .close-result {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, .2);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #fff
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            padding: .5rem 1rem;
+            background: rgba(255, 255, 255, .05);
+            display: flex;
+            justify-content: space-around;
+            font-size: .75rem
+        }
+
+        .stat-item {
+            text-align: center
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--success)
+        }
+
+        .stat-label {
+            opacity: .6
+        }
+
+        /* Camera Error */
+        .camera-error {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #0d1117;
+            padding: 2rem;
+            text-align: center
+        }
+
+        .camera-error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: .5
+        }
+
+        .camera-error-text {
+            font-size: 1rem;
+            margin-bottom: 1rem
+        }
+
+        .camera-error-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: .75rem 1.5rem;
+            border-radius: 8px;
+            font-size: .9rem;
+            cursor: pointer
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Lock Screen -->
+    <div id="lockScreen" class="lock-screen">
+        <div class="lock-icon">🔒</div>
+        <div class="lock-title">Device Authorization</div>
+        <div class="lock-subtitle">Enter admin PIN to authorize this scanner</div>
+        <div class="device-id" id="deviceId">Loading...</div>
+        <div class="pin-group">
+            <input type="password" class="pin-digit" maxlength="1" inputmode="numeric">
+            <input type="password" class="pin-digit" maxlength="1" inputmode="numeric">
+            <input type="password" class="pin-digit" maxlength="1" inputmode="numeric">
+            <input type="password" class="pin-digit" maxlength="1" inputmode="numeric">
+            <input type="password" class="pin-digit" maxlength="1" inputmode="numeric">
+            <input type="password" class="pin-digit" maxlength="1" inputmode="numeric">
+        </div>
+        <button class="lock-btn" onclick="authorize()">Authorize Scanner</button>
+        <div id="lockError" class="lock-error"></div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">♥</div>
+                CardioDetect
+            </div>
+            <div class="header-btns">
+                <button class="header-btn" onclick="toggleFlash()" id="flashBtn">🔦</button>
+                <button class="header-btn" onclick="switchCamera()">🔄</button>
+            </div>
+        </div>
+
+        <div class="camera-container">
+            <div id="interactive"></div>
+
+            <div class="scan-overlay">
+                <div class="scan-frame"></div>
+                <div class="scan-hint">Point camera at the report barcode</div>
+            </div>
+
+            <div id="cameraError" class="camera-error" style="display:none">
+                <div class="camera-error-icon">📷</div>
+                <div class="camera-error-text">Camera access required</div>
+                <button class="camera-error-btn" onclick="startCamera()">Enable Camera</button>
+            </div>
+
+            <div id="resultPanel" class="result-panel">
+                <button class="close-result" onclick="closeResult()">×</button>
+                <div class="result-header">
+                    <div class="result-icon" id="resultIcon">✅</div>
+                    <div>
+                        <div class="result-title" id="resultTitle">Verified</div>
+                        <div class="result-subtitle" id="resultSubtitle">HMAC signature valid</div>
+                    </div>
+                </div>
+                <div class="result-data" id="resultData"></div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="scanCount">0</div>
+                <div class="stat-label">Scans</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="validCount">0</div>
+                <div class="stat-label">Valid</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="highCount">0</div>
+                <div class="stat-label">High Risk</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Config
+        const ADMIN_PIN = '258369';
+        const HMAC_SECRET = 'CardioDetect_SecureKey_2024_Hospital_Edition';
+
+        // State
+        let stats = JSON.parse(localStorage.getItem('scanStats') || '{"scans":0,"valid":0,"high":0}');
+        let facingMode = 'environment';
+        let isScanning = true;
+
+        // Device ID
+        function genDeviceId() {
+            const nav = [navigator.userAgent, navigator.language, screen.width + 'x' + screen.height].join('|');
+            let h = 0;
+            for (let i = 0; i < nav.length; i++) { h = ((h << 5) - h) + nav.charCodeAt(i); h = h & h; }
+            return 'CD-' + Math.abs(h).toString(16).toUpperCase().padStart(8, '0');
+        }
+        const DEVICE_ID = genDeviceId();
+
+        // Auth
+        function checkAuth() {
+            const devices = JSON.parse(localStorage.getItem('authorizedDevices') || '[]');
+            if (devices.includes(DEVICE_ID)) {
+                document.getElementById('lockScreen').classList.add('hidden');
+                startCamera();
+                return true;
+            }
+            return false;
+        }
+
+        function authorize() {
+            const pin = Array.from(document.querySelectorAll('.pin-digit')).map(d => d.value).join('');
+            if (pin === ADMIN_PIN) {
+                const devices = JSON.parse(localStorage.getItem('authorizedDevices') || '[]');
+                if (!devices.includes(DEVICE_ID)) {
+                    devices.push(DEVICE_ID);
+                    localStorage.setItem('authorizedDevices', JSON.stringify(devices));
+                }
+                document.getElementById('lockScreen').classList.add('hidden');
+                speak('Scanner authorized');
+                startCamera();
+            } else {
+                document.getElementById('lockError').textContent = 'Invalid PIN';
+                document.querySelectorAll('.pin-digit').forEach(d => d.value = '');
+            }
+        }
+
+        // PIN navigation
+        document.querySelectorAll('.pin-digit').forEach((d, i) => {
+            d.addEventListener('input', e => {
+                if (e.target.value && i < 5) document.querySelectorAll('.pin-digit')[i + 1].focus();
+            });
+            d.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !e.target.value && i > 0) document.querySelectorAll('.pin-digit')[i - 1].focus();
+                if (e.key === 'Enter') authorize();
+            });
+        });
+
+        // Camera
+        function startCamera() {
+            if (typeof Quagga === 'undefined') {
+                document.getElementById('cameraError').style.display = 'flex';
+                document.getElementById('cameraError').querySelector('.camera-error-text').textContent = 'Scanner library failed to load';
+                return;
+            }
+
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.getElementById('interactive'),
+                    constraints: {
+                        facingMode: facingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                },
+                decoder: {
+                    readers: ["code_128_reader"]  // Code128 only
+                },
+                locate: true,
+                frequency: 10
+            }, function (err) {
+                if (err) {
+                    console.error(err);
+                    document.getElementById('cameraError').style.display = 'flex';
+                    return;
+                }
+                document.getElementById('cameraError').style.display = 'none';
+                Quagga.start();
+            });
+
+            Quagga.onDetected(onBarcodeDetected);
+        }
+
+        function switchCamera() {
+            facingMode = facingMode === 'environment' ? 'user' : 'environment';
+            Quagga.stop();
+            startCamera();
+        }
+
+        function toggleFlash() {
+            // Flash control (if supported)
+            const track = Quagga.CameraAccess.getActiveTrack();
+            if (track && track.getCapabilities().torch) {
+                const currentTorch = track.getSettings().torch || false;
+                track.applyConstraints({ advanced: [{ torch: !currentTorch }] });
+            }
+        }
+
+        // Barcode detection
+        let lastCode = '';
+        let lastTime = 0;
+
+        function onBarcodeDetected(result) {
+            if (!isScanning) return;
+
+            const code = result.codeResult.code;
+            const now = Date.now();
+
+            // Debounce - ignore same code within 3 seconds
+            if (code === lastCode && now - lastTime < 3000) return;
+
+            // Only process CardioDetect codes
+            if (!code.startsWith('CD|')) return;
+
+            lastCode = code;
+            lastTime = now;
+            isScanning = false;
+
+            // Vibrate feedback
+            if (navigator.vibrate) navigator.vibrate(200);
+
+            // Process
+            processBarcode(code);
+        }
+
+        // HMAC verification
+        async function verifyHMAC(payload, sig) {
+            const enc = new TextEncoder();
+            const key = await crypto.subtle.importKey('raw', enc.encode(HMAC_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+            const signature = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
+            return Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 12).toUpperCase() === sig;
+        }
+
+        async function processBarcode(code) {
+            try {
+                const parts = code.split('|');
+                const ver = parseInt(parts[1]) || 1;
+                let data = {}, isSecure = false;
+
+                if (ver === 3 && parts.length >= 11) {
+                    data = {
+                        id: parts[2],
+                        name: parts[3],
+                        date: parts[4],
+                        risk: parts[5],
+                        prob: parseInt(parts[6]) / 10,
+                        acc: parts[7],
+                        npi: parts[8],
+                        ts: parseInt(parts[9]),
+                        sig: parts[10]
+                    };
+                    const payload = `${data.id}|${data.name}|${data.date}|${data.risk}|${parts[6]}|${data.acc}|${data.npi}|${data.ts}`;
+                    isSecure = await verifyHMAC(payload, data.sig);
+                } else if (ver === 2 && parts.length >= 10) {
+                    data = { id: parts[2], name: parts[3], date: parts[4], risk: parts[5], prob: parseInt(parts[6]) / 10, acc: parts[7] };
+                } else {
+                    data = { id: parts[1], name: parts[2], date: parts[3], risk: parts[4] };
+                }
+
+                showResult(data, isSecure, ver);
+                updateStats(data, true);
+                speak(isSecure ? 'Verified' : 'Legacy');
+
+            } catch (e) {
+                showError('Failed to parse barcode');
+                updateStats(null, false);
+            }
+        }
+
+        function showResult(data, isSecure, ver) {
+            const panel = document.getElementById('resultPanel');
+            const icon = document.getElementById('resultIcon');
+            const title = document.getElementById('resultTitle');
+            const subtitle = document.getElementById('resultSubtitle');
+            const dataDiv = document.getElementById('resultData');
+
+            icon.className = 'result-icon ' + (isSecure ? 'success' : 'warning');
+            icon.textContent = isSecure ? '✅' : '⚠️';
+            title.textContent = isSecure ? 'Verified Authentic' : 'Legacy Format';
+            subtitle.textContent = isSecure ? 'HMAC-SHA256 valid' : 'Version ' + ver;
+
+            const dateStr = data.date || '';
+            const fmtDate = dateStr.length >= 8 ? `${dateStr.slice(4, 6)}/${dateStr.slice(6, 8)}/${dateStr.slice(0, 4)}` : dateStr;
+
+            let riskClass = 'low', riskIcon = '🟢';
+            if ((data.risk || '').includes('HIGH')) { riskClass = 'high'; riskIcon = '🔴'; }
+            else if ((data.risk || '').includes('MODERATE')) { riskClass = 'moderate'; riskIcon = '🟡'; }
+
+            dataDiv.innerHTML = `
+                <div class="data-item" style="grid-column:span 2">
+                    <div class="data-label">Patient</div>
+                    <div class="data-value">${data.name || 'N/A'}</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">ID</div>
+                    <div class="data-value">${data.id || 'N/A'}</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-label">Date</div>
+                    <div class="data-value">${fmtDate}</div>
+                </div>
+                <div class="data-item" style="grid-column:span 2">
+                    <div class="data-label">Risk Assessment</div>
+                    <div class="data-value"><span class="risk-badge ${riskClass}">${riskIcon} ${data.risk || 'N/A'}</span></div>
+                </div>
+                ${data.prob ? `<div class="data-item" style="grid-column:span 2"><div class="data-label">Probability</div><div class="data-value">${data.prob.toFixed(1)}%</div></div>` : ''}
+            `;
+
+            panel.classList.add('show');
+        }
+
+        function showError(msg) {
+            const panel = document.getElementById('resultPanel');
+            document.getElementById('resultIcon').className = 'result-icon error';
+            document.getElementById('resultIcon').textContent = '❌';
+            document.getElementById('resultTitle').textContent = 'Verification Failed';
+            document.getElementById('resultSubtitle').textContent = msg;
+            document.getElementById('resultData').innerHTML = '';
+            panel.classList.add('show');
+        }
+
+        function closeResult() {
+            document.getElementById('resultPanel').classList.remove('show');
+            isScanning = true;
+            lastCode = '';
+        }
+
+        // Stats
+        function updateStats(data, valid) {
+            stats.scans++;
+            if (valid) stats.valid++;
+            if (data && (data.risk || '').includes('HIGH')) stats.high++;
+            localStorage.setItem('scanStats', JSON.stringify(stats));
+            renderStats();
+        }
+
+        function renderStats() {
+            document.getElementById('scanCount').textContent = stats.scans;
+            document.getElementById('validCount').textContent = stats.valid;
+            document.getElementById('highCount').textContent = stats.high;
+        }
+
+        // Voice
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const u = new SpeechSynthesisUtterance(text);
+                u.rate = 1.2;
+                speechSynthesis.speak(u);
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('deviceId').textContent = DEVICE_ID;
+            renderStats();
+            if (!checkAuth()) {
+                document.querySelectorAll('.pin-digit')[0].focus();
+            }
+        });
+    </script>
+</body>
+
+</html>

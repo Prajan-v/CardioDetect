@@ -1,0 +1,67 @@
+{
+  "success": true,
+  "risk_score": 0.015292861464516007,
+  "risk_category": "LOW",
+  "recommendation": "Low cardiovascular risk (1.5%). Continue healthy lifestyle practices. Regular check-ups recommended.",
+  "ocr_confidence": {
+    "average": 0.9159999999999999,
+    "per_field": {
+      "systolic_bp": 0.9,
+      "diastolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "age": 0.9
+    }
+  },
+  "model_confidence": 0.015292861464516007,
+  "fields": {
+    "systolic_bp": 124.0,
+    "diastolic_bp": 80.0,
+    "cholesterol": 178.0,
+    "age": 54.0
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "age"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-05T12:59:21.451055",
+    "model_version": "risk_regressor_v2",
+    "document_path": "ChatGPT Image Dec 4, 2025, 05_00_48 PM.png"
+  },
+  "errors": [],
+  "warnings": [],
+  "explanations": {
+    "top_reasons": [
+      "Non-smoking status lowers cardiovascular risk.",
+      "Absence of diabetes lowers cardiovascular risk.",
+      "Total cholesterol 178 mg/dL is in a favorable range and lowers risk."
+    ],
+    "details": [
+      {
+        "feature": "smoking",
+        "value": 0.0,
+        "direction": "decreases",
+        "strength": 0.5,
+        "text": "Non-smoking status lowers cardiovascular risk."
+      },
+      {
+        "feature": "diabetes",
+        "value": 0.0,
+        "direction": "decreases",
+        "strength": 0.4,
+        "text": "Absence of diabetes lowers cardiovascular risk."
+      },
+      {
+        "feature": "total_cholesterol",
+        "value": 178.0,
+        "direction": "decreases",
+        "strength": 0.05,
+        "text": "Total cholesterol 178 mg/dL is in a favorable range and lowers risk."
+      }
+    ]
+  }
+}

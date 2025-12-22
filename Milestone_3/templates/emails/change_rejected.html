@@ -1,0 +1,44 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Profile Change Rejected - CardioDetect{% endblock %}
+
+{% block content %}
+<h1 class="greeting">Profile Change Request Update</h1>
+
+<p class="message">
+    Hi {{ first_name|default:"there" }},
+</p>
+
+<p class="message">
+    Your requested profile change has been <strong style="color: #dc2626;">not approved</strong> at this time.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-left: 4px solid #dc2626;">
+    <p style="color: #991b1b;"><strong>📝 Field:</strong> {{ field_name }}</p>
+    <p style="color: #991b1b;"><strong>Requested Change:</strong> {{ old_value }} → {{ new_value }}</p>
+    <p style="color: #991b1b;"><strong>Reviewed by:</strong> {{ reviewed_by }}</p>
+</div>
+
+{% if review_notes %}
+<p class="message">
+    <strong>Reason:</strong><br>
+    {{ review_notes }}
+</p>
+{% endif %}
+
+<p class="message">
+    If you believe this was a mistake or have additional information, please contact support or try submitting a new
+    request with more details.
+</p>
+
+<div style="text-align: center;">
+    <a href="{{ profile_url }}" class="cta-button">Update Profile</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    This request was reviewed on {{ reviewed_at }}.
+</p>
+{% endblock %}

@@ -1,0 +1,75 @@
+{
+  "success": true,
+  "risk_score": 0.25648440409918133,
+  "risk_category": "HIGH",
+  "recommendation": "High cardiovascular risk (25.6%). Immediate medical consultation recommended. Comprehensive cardiovascular evaluation and intervention may be needed.",
+  "ocr_confidence": {
+    "average": 0.943,
+    "per_field": {
+      "systolic_bp": 0.8,
+      "diastolic_bp": 0.9,
+      "cholesterol": 0.9,
+      "glucose": 0.8,
+      "age": 0.9,
+      "sex": 0.8
+    }
+  },
+  "model_confidence": 0.25648440409918133,
+  "fields": {
+    "systolic_bp": 102.0,
+    "diastolic_bp": 80.0,
+    "cholesterol": 316.0,
+    "glucose": 140.0,
+    "age": 81.0,
+    "sex": 0
+  },
+  "fields_used": [
+    "systolic_bp",
+    "diastolic_bp",
+    "cholesterol",
+    "glucose",
+    "age",
+    "sex"
+  ],
+  "audit": {
+    "engine": "tesseract",
+    "file_type": "png",
+    "timestamp": "2025-12-05T13:55:54.209400",
+    "model_version": "risk_regressor_v2",
+    "document_path": "report_1007.png"
+  },
+  "errors": [],
+  "warnings": [
+    "Safety rule: some essential risk factors were not extracted (e.g., diabetes, fasting_glucose, smoking). Numeric risk may be underestimated."
+  ],
+  "explanations": {
+    "top_reasons": [
+      "Total cholesterol 316 mg/dL is high and increases cardiovascular risk.",
+      "Age 81 years is high and increases cardiovascular risk.",
+      "Systolic blood pressure 102 mmHg is in a healthy range and lowers risk."
+    ],
+    "details": [
+      {
+        "feature": "total_cholesterol",
+        "value": 316.0,
+        "direction": "increases",
+        "strength": 2.7,
+        "text": "Total cholesterol 316 mg/dL is high and increases cardiovascular risk."
+      },
+      {
+        "feature": "age",
+        "value": 81.0,
+        "direction": "increases",
+        "strength": 2.6,
+        "text": "Age 81 years is high and increases cardiovascular risk."
+      },
+      {
+        "feature": "systolic_bp",
+        "value": 102.0,
+        "direction": "decreases",
+        "strength": 0.9,
+        "text": "Systolic blood pressure 102 mmHg is in a healthy range and lowers risk."
+      }
+    ]
+  }
+}

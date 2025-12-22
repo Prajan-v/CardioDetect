@@ -1,0 +1,12 @@
+{
+  "best_ensemble": "Blending_LR",
+  "accuracy": 0.9222819346837536,
+  "recall": 0.9206896551724137,
+  "f1": 0.8503184713375797,
+  "roc_auc": 0.967086216271962,
+  "threshold": 0.44999999999999984,
+  "improvement_over_baseline": 1.5381934683753684,
+  "cv_folds": 5,
+  "n_features": 23,
+  "trained_at": "2025-12-06T13:13:52.840960"
+}

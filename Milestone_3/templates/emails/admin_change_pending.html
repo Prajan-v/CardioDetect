@@ -1,0 +1,31 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New Change Request Pending - CardioDetect Admin{% endblock %}
+
+{% block content %}
+<h1 class="greeting">New Change Request Pending 📋</h1>
+
+<p class="message">
+    A user has submitted a profile change request that requires your approval.
+</p>
+
+<div class="info-box"
+    style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b;">
+    <p style="color: #92400e;"><strong>👤 User:</strong> {{ user_name }} ({{ user_email }})</p>
+    <p style="color: #92400e;"><strong>📝 Field:</strong> {{ field_name }}</p>
+    <p style="color: #92400e;"><strong>Current Value:</strong> {{ old_value }}</p>
+    <p style="color: #92400e;"><strong>Requested Value:</strong> {{ new_value }}</p>
+    <p style="color: #92400e;"><strong>Reason:</strong> {{ reason }}</p>
+    <p style="color: #92400e;"><strong>Submitted:</strong> {{ submitted_at }}</p>
+</div>
+
+<div style="text-align: center;">
+    <a href="{{ approval_url }}" class="cta-button">Review Change Request</a>
+</div>
+
+<div class="divider"></div>
+
+<p class="security-note">
+    🔔 This is an automated notification for CardioDetect administrators.
+</p>
+{% endblock %}

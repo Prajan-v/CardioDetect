@@ -1,0 +1,21 @@
+{
+  "accuracy": 0.9921087242437527,
+  "precision": 0.993046623852231,
+  "recall": 0.9893497623014987,
+  "f1": 0.9911482336106355,
+  "precision_class_0": 0.9965095986038395,
+  "recall_class_0": 0.9939077458659704,
+  "f1_class_0": 0.9952069716775599,
+  "precision_class_1": 0.9826302729528535,
+  "recall_class_1": 0.9949748743718593,
+  "f1_class_1": 0.9887640449438202,
+  "precision_class_2": 1.0,
+  "recall_class_2": 0.9791666666666666,
+  "f1_class_2": 0.9894736842105263,
+  "roc_auc_ovr": 0.9979743299724495,
+  "model_name": "stacking_tree_ensemble",
+  "target_type": "3class",
+  "ensemble_type": "stacking",
+  "run_name": "stacking_tree_ensemble",
+  "saved_at": "2025-12-04T23:06:06.406656"
+}

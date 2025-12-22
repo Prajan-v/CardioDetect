@@ -1,36 +1,79 @@
+
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
-.venv/
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
 env/
 venv/
+ENV/
 
-# Data (Ignore real data, keep sample)
-data/raw/
-data/processed/
-data/merged/
-data/external/
-!data/sample_heart_data.csv
-
-# Models (Saved artifacts)
-models/
+# Data files
+*.csv
+*.tsv
+*.dat
 *.pkl
-*.npy
-*.pth
+*.pickle
+*.h5
+*.zip
+*.tar.gz
+*.rar
 
-# Source Models (Code)
-!src/models/
-
-
-# Reports
-!reports/
-
-*.png
-*.pdf
-
-# IDE
+# IDEs
 .vscode/
 .idea/
+*.swp
 .DS_Store
-MY_NOTES.md
+
+# Database
+*.sqlite3
+*.sqlite3.backup
+db.sqlite3.backup
+
+# Node modules
+node_modules/
+.next/
+
+# Logs
+*.log
+logs/
+
+# Privacy/Sensitive files
+.env
+.env.local
+.env.production
+*.pem
+*.key
+secrets/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Mail folder (contains screenshots)
+mail/
+
