@@ -82,3 +82,16 @@ ULTIMATE_CARDIODETECT_STUDY_GUIDE.md
 milestones_early_heart_disease.pdf
 start.sh
 
+# All virtual environments
+**/venv/
+**/.venv/
+
+# Generated/temporary files
+*.backup
+*_backup.*
+*_export_*.json
+*.xlsx
+
+# Compiled files
+**/__pycache__/
+*.pyc
