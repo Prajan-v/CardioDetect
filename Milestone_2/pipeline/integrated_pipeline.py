@@ -1,19 +1,33 @@
 """
 INTEGRATED DUAL-MODEL PIPELINE
 ==============================
-Combines OCR + Detection (91.45%) + Prediction (91.63%) Models
+This is the CORE ML pipeline that powers CardioDetect.
 
-Features:
-- Enhanced OCR with improved preprocessing
-- Detection Model: Current heart disease status
-- Prediction Model: 10-year CHD risk level
-- Risk Categorization: Low/Moderate/High
+┌─────────────────────────────────────────────────────────────────┐
+│                     PIPELINE OVERVIEW                            │
+├─────────────────────────────────────────────────────────────────┤
+│  1. OCR: Extract text from medical documents (PDF/Images)       │
+│  2. Field Extraction: Parse medical values using regex          │
+│  3. Detection Model: Does patient currently have heart disease? │
+│     - Uses: Voting Ensemble (XGBoost + RandomForest + LightGBM) │
+│     - Accuracy: 91.45%                                          │
+│  4. Prediction Model: 10-year cardiovascular risk               │
+│     - Uses: XGBoost                                              │
+│     - Accuracy: 91.63%                                          │
+│  5. Clinical Advisor: ACC/AHA guideline recommendations         │
+└─────────────────────────────────────────────────────────────────┘
 
-OCR Improvements:
-- Adaptive thresholding options
-- Deskewing for rotated documents
-- Multiple PSM modes for different layouts
-- Enhanced field extraction for cardiovascular data
+Key Components:
+- EnhancedMedicalOCR: Handles document text extraction
+- DualModelPipeline: Orchestrates the entire prediction flow
+- ClinicalAdvisor: Generates clinical recommendations
+
+Technologies Used:
+- Tesseract OCR (via pytesseract)
+- OpenCV for image preprocessing
+- PyMuPDF for PDF text extraction
+- scikit-learn, XGBoost, LightGBM for ML models
+- SHAP for model explainability
 """
 
 import cv2
@@ -67,9 +81,23 @@ except ImportError:
     except ImportError:
         HAS_ENSEMBLE = False
 
+# ============================================================================
+# CLASS: EnhancedMedicalOCR
+# ============================================================================
+# This class handles all document processing and text extraction.
+# It uses Tesseract OCR with multiple preprocessing techniques to
+# maximize extraction accuracy from medical documents.
+# ============================================================================
 class EnhancedMedicalOCR:
     """
-    Enhanced OCR for medical documents with improved preprocessing
+    Enhanced OCR for medical documents with improved preprocessing.
+    
+    OCR FLOW:
+    1. Check file type (PDF or Image)
+    2. For PDFs: Try direct text extraction first (PyMuPDF)
+    3. If scanned: Convert to image and run Tesseract
+    4. Apply preprocessing if needed (CLAHE, Otsu, Adaptive)
+    5. Parse extracted text for medical values using regex
     """
     
     def __init__(self, verbose: bool = True):
@@ -80,17 +108,33 @@ class EnhancedMedicalOCR:
             print(f"  {msg}")
     
     def deskew(self, image: np.ndarray) -> np.ndarray:
-        """Deskew rotated images"""
+        """
+        DESKEW: Fix rotated/tilted scanned documents.
+        
+        Why needed: Scanned documents are often slightly rotated,
+        which significantly reduces OCR accuracy.
+        
+        How it works:
+        1. Find all non-zero pixels (text)
+        2. Calculate minimum bounding rectangle
+        3. Get rotation angle and rotate image to straighten
+        """
         coords = np.column_stack(np.where(image > 0))
         if len(coords) < 100:
-            return image
+            return image  # Not enough content to deskew
+        
+        # Calculate rotation angle from bounding rectangle
         angle = cv2.minAreaRect(coords)[-1]
         if angle < -45:
             angle = -(90 + angle)
         else:
             angle = -angle
+        
+        # Skip if already straight (within 0.5 degrees)
         if abs(angle) < 0.5:
             return image
+        
+        # Rotate image to correct the skew
         (h, w) = image.shape[:2]
         center = (w // 2, h // 2)
         M = cv2.getRotationMatrix2D(center, angle, 1.0)
@@ -376,7 +420,25 @@ class EnhancedMedicalOCR:
         return fields
     
     def extract_from_file(self, file_path: str, dpi: int = 300) -> Dict[str, Any]:
-        """Extract text and fields from PDF or image file"""
+        """
+        MAIN OCR ENTRY POINT
+        ====================
+        Extract text and medical fields from PDF or image files.
+        
+        FLOW:
+        1. Detect file type (PDF vs Image)
+        2. For PDF: Try PyMuPDF direct extraction first (faster, 100% accurate)
+        3. If scanned PDF or Image: Use Tesseract OCR
+        4. Parse extracted text for medical values
+        5. Assess extraction quality
+        
+        Args:
+            file_path: Path to medical document
+            dpi: Resolution for PDF conversion (higher = better quality but slower)
+            
+        Returns:
+            Dict with: text, fields, confidence, quality, method
+        """
         file_path = Path(file_path)
         self.log(f"Processing: {file_path.name}")
         
@@ -384,28 +446,37 @@ class EnhancedMedicalOCR:
         method = ""
         confidence = 0.0
         
-        # Check file type
+        # =====================================
+        # STEP 1: Detect file type
+        # =====================================
         suffix = file_path.suffix.lower()
         
         if suffix == '.pdf':
-            # Try digital extraction first (PyMuPDF)
+            # =====================================
+            # STEP 2A: Try DIGITAL PDF extraction
+            # =====================================
+            # Digital PDFs have embedded text - extract directly (100% accurate)
             if HAS_FITZ:
                 try:
                     doc = fitz.open(str(file_path))
                     texts = [page.get_text("text") for page in doc]
                     doc.close()
                     text = "\n".join(texts)
-                    if len(text) > 200:
+                    if len(text) > 200:  # Has meaningful text content
                         method = "digital_extraction"
-                        confidence = 1.0
+                        confidence = 1.0  # Direct extraction = perfect confidence
                         self.log("✓ Digital PDF - text extracted directly")
                 except Exception as e:
                     self.log(f"⚠ PyMuPDF error: {e}")
             
-            # Fall back to OCR
+            # =====================================
+            # STEP 2B: Fall back to OCR for scanned PDFs
+            # =====================================
+            # Scanned PDFs are images - need OCR
             if not text and HAS_PDF2IMAGE:
                 self.log(f"⏳ Converting PDF to image ({dpi} DPI)...")
                 try:
+                    # Convert PDF page to high-resolution image
                     images = convert_from_path(str(file_path), dpi=dpi, first_page=1, last_page=1)
                     if images:
                         img_array = np.array(images[0])
@@ -415,7 +486,9 @@ class EnhancedMedicalOCR:
                     self.log(f"⚠ pdf2image error: {e}")
         
         elif suffix in ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']:
-            # Direct image OCR
+            # =====================================
+            # STEP 2C: Direct image OCR
+            # =====================================
             img = cv2.imread(str(file_path))
             if img is not None:
                 text, confidence = self._process_image_ocr(img)
@@ -476,16 +549,36 @@ class EnhancedMedicalOCR:
             return "low"
 
 
+# ============================================================================
+# CLASS: DualModelPipeline
+# ============================================================================
+# This is the MAIN ORCHESTRATOR that ties everything together.
+# It loads the trained ML models and coordinates the prediction flow.
+# ============================================================================
 class DualModelPipeline:
     """
-    Integrated pipeline combining OCR + Detection + Prediction models
+    MAIN PREDICTION PIPELINE
+    ========================
+    Integrates OCR + Detection Model + Prediction Model + Clinical Advisor
+    
+    MODELS USED:
+    1. Detection Model: Voting Ensemble (XGBoost + RandomForest + LightGBM)
+       - Purpose: Does patient currently have heart disease?
+       - Accuracy: 91.45%
+       
+    2. Prediction Model: XGBoost
+       - Purpose: 10-year cardiovascular risk prediction
+       - Accuracy: 91.63%
+    
+    COMPLETE FLOW:
+    process_document(file) → OCR → Detection → Prediction → Clinical Risk
     """
     
     def __init__(self, verbose: bool = True):
         self.verbose = verbose
-        self.ocr = EnhancedMedicalOCR(verbose=verbose)
+        self.ocr = EnhancedMedicalOCR(verbose=verbose)  # Initialize OCR engine
         
-        # Load models
+        # Load trained ML models from .pkl files
         self._load_models()
     
     def log(self, msg: str):
@@ -493,12 +586,25 @@ class DualModelPipeline:
             print(msg)
     
     def _load_models(self):
-        """Load detection and prediction models"""
-        # Use path relative to this file: Milestone_2/pipeline -> Milestone_2/models/Final_models
+        """
+        LOAD TRAINED MODELS
+        ===================
+        Loads pre-trained models from Milestone_2/models/Final_models/
+        
+        Models loaded:
+        - detection_voting_optimized.pkl: Voting Ensemble (XGB + RF + LightGBM)
+        - detection_scaler_v3.pkl: StandardScaler for feature normalization
+        - prediction_xgb.pkl: XGBoost for 10-year risk prediction
+        """
+        # Path resolution: pipeline/ -> models/Final_models/
         pipeline_dir = Path(__file__).parent  # Milestone_2/pipeline
         models_dir = pipeline_dir.parent / "models" / "Final_models"  # Milestone_2/models/Final_models
         
-        # Detection models - prioritize optimized voting ensemble (91.30% accuracy)
+        # =============================================
+        # DETECTION MODEL: Heart Disease Detection
+        # =============================================
+        # Uses Voting Ensemble: XGBoost + RandomForest + LightGBM
+        # Soft voting combines probability estimates from all 3 models
         self.detection_models = {}
         self.detection_scaler = None
         self.detection_config = None
@@ -506,9 +612,11 @@ class DualModelPipeline:
         
         detection_dir = models_dir / "detection"
         if detection_dir.exists():
-            # Load optimized voting model as primary (91.30% accuracy)
+            # Load the main voting ensemble model (91.30% accuracy)
             optimized_path = detection_dir / "detection_voting_optimized.pkl"
             if optimized_path.exists():
+                # This is a VotingClassifier with estimators: [('xgb', XGBClassifier), 
+                # ('rf', RandomForestClassifier), ('lgbm', LGBMClassifier)]
                 self.primary_detection_model = joblib.load(optimized_path)
                 self.detection_models['voting_optimized'] = self.primary_detection_model
             
