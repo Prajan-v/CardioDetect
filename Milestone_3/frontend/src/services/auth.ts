@@ -7,7 +7,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 // Export for use in other components
 export const getApiBase = () => API_BASE;
-export const getApiUrl = (endpoint: string) => `${API_BASE}${endpoint}`;
+export const getApiUrl = (endpoint: string) => `${API_BASE}/${endpoint.replace(/^\//, '')}`;
 
 
 export interface User {

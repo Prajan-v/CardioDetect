@@ -447,25 +447,13 @@ export default function LandingPage() {
               <p className="text-slate-500 text-sm">
                 © 2025 CardioDetect. AI-Powered Heart Disease Detection.
               </p>
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-sm mt-2 flex items-center gap-2"
-              >
-                <span className="text-slate-500">Crafted with</span>
-                <span className="text-red-500 animate-pulse">💖</span>
-                <span className="text-slate-500">by</span>
-                <span className="font-semibold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-                  Prajan
-                </span>
-                <span className="text-lg">🌪️</span>
-              </motion.p>
+
             </div>
 
             <div className="flex gap-6">
               <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">Privacy</a>
               <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">Terms</a>
-              <a href="#" className="text-slate-400 hover:text-white transition-colors text-sm">Contact</a>
+              <a href="mailto:cardiodetect.care@gmail.com" className="text-slate-400 hover:text-white transition-colors text-sm">Contact</a>
             </div>
           </div>
         </div>

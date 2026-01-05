@@ -332,7 +332,7 @@ export default function DoctorReportsPage() {
                 {/* Help Section */}
                 <div className="mt-12 text-center">
                     <p className="text-slate-500 text-sm">
-                        Need help or found an issue? <Link href="mailto:support@cardiodetect.ai" className="text-blue-400 hover:underline">Click here</Link>
+                        Need help or found an issue? <Link href="mailto:cardiodetect.care@gmail.com" className="text-blue-400 hover:underline">Click here</Link>
                     </p>
                 </div>
             </main>

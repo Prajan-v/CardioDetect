@@ -28,6 +28,8 @@ export interface PredictionInput {
     major_vessels?: number;
     thalassemia?: number;
     resting_ecg?: number;
+    // Analysis mode
+    model_used?: 'detection' | 'prediction' | 'both';
 }
 
 export interface PredictionResult {
@@ -42,6 +44,15 @@ export interface PredictionResult {
     detection_probability?: number;
     feature_importance?: Record<string, number>;
     top_contributors?: string[];
+    // SHAP explanations from backend
+    explanations?: Array<{
+        feature: string;
+        value?: number;
+        impact: number;
+        direction: 'increases' | 'decreases';
+    }>;
+    shap_base_value?: number;
+    model_probability?: number;
     clinical_recommendations?: {
         recommendations: Array<{
             category: string;
@@ -105,14 +116,26 @@ export async function checkHealth(): Promise<HealthStatus> {
  */
 export async function runPrediction(input: PredictionInput): Promise<PredictionResult> {
     try {
+        console.log('[API] Calling /predict/manual/ with input:', input);
         const response = await fetchWithAuth('/predict/manual/', {
             method: 'POST',
             body: JSON.stringify(input),
         });
-        if (response.ok) return await response.json();
-    } catch (e) { /* API unavailable */ }
+        console.log('[API] Response status:', response.status);
+        if (response.ok) {
+            const result = await response.json();
+            console.log('[API] Prediction result from backend:', result);
+            return result;
+        } else {
+            const error = await response.text();
+            console.warn('[API] Prediction failed:', response.status, error);
+        }
+    } catch (e) {
+        console.warn('[API] Prediction API unavailable, using local fallback:', e);
+    }
 
     // Fallback to local calculation
+    console.log('[API] Using local fallback calculation');
     return calculateLocalPrediction(input);
 }
 

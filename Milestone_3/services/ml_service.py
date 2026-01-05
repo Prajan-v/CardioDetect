@@ -107,26 +107,43 @@ class MLService:
             # Run pipeline prediction
             result = self.pipeline.predict_from_features(mapped_features)
             
-            # Use clinical assessment for risk (more accurate for OCR-extracted data)
-            # The ML model overweights age; clinical assessment uses guideline-based scoring
-            clinical = result.get('clinical_risk', result.get('clinical_assessment', {}))
-            prediction_data = result.get('prediction', {})
+            # Get both clinical assessment and ML prediction data
+            clinical = result.get('clinical_risk') or result.get('clinical_assessment') or {}
+            prediction_data = result.get('prediction') or {}
             
-            # Prefer clinical assessment; fallback to ML prediction
-            risk_percentage = clinical.get('percentage', prediction_data.get('probability', 0) * 100)
-            risk_category = clinical.get('level_code', 'moderate').upper()
+            # PRIORITY: Use ML model prediction first (matches frontend display)
+            # Fallback to clinical assessment only if ML prediction not available
+            if prediction_data.get('probability') is not None:
+                # ML model output - convert probability to percentage
+                risk_percentage = prediction_data.get('probability', 0) * 100
+                # Use prediction risk level, or derive from percentage
+                if prediction_data.get('risk_level'):
+                    risk_category = prediction_data.get('risk_level', 'MODERATE').upper()
+                elif risk_percentage >= 50:
+                    risk_category = 'HIGH'
+                elif risk_percentage >= 20:
+                    risk_category = 'MODERATE'
+                else:
+                    risk_category = 'LOW'
+            else:
+                # Fallback to clinical assessment
+                risk_percentage = clinical.get('percentage') or 0
+                risk_category = (clinical.get('level_code') or 'moderate').upper()
+            
+            # Handle detection dict safely (may be None even when key exists)
+            detection = result.get('detection') or {}
             
             response = {
                 'risk_score': clinical.get('score'),
                 'risk_percentage': risk_percentage,
                 'risk_category': risk_category.replace('🟢 ', '').replace('🟡 ', '').replace('🔴 ', ''),
                 'confidence': prediction_data.get('confidence'),
-                'detection_result': result.get('detection', {}).get('prediction') == 'Disease Detected' if result.get('detection') else None,
-                'detection_probability': result.get('detection', {}).get('probability'),
+                'detection_result': detection.get('prediction') == 'Disease Detected' if detection else None,
+                'detection_probability': detection.get('probability'),
                 'clinical_score': clinical.get('score'),
                 'clinical_max_score': clinical.get('max_score'),
-                'recommendations': clinical.get('recommendation', self._get_recommendations(result)),
-                'risk_factors': clinical.get('risk_factors', []),
+                'recommendations': clinical.get('recommendation') or self._get_recommendations(result),
+                'risk_factors': clinical.get('risk_factors') or [],
                 'model_used': 'clinical_assessment',
                 'explanations': [],  # SHAP explanations
             }
@@ -158,6 +175,8 @@ class MLService:
             
             return response
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             print(f"Prediction error: {e}")
             return self._fallback_prediction(features)
     
@@ -170,7 +189,9 @@ class MLService:
             'systolic_bp': features.get('systolic_bp'),
             'diastolic_bp': features.get('diastolic_bp'),
             'total_cholesterol': features.get('cholesterol'),
+            'cholesterol': features.get('cholesterol'),  # Alias for SHAP
             'heart_rate': features.get('heart_rate'),
+            'max_hr': features.get('max_heart_rate', features.get('heart_rate', 0)),  # For SHAP
             'fasting_glucose': features.get('glucose'),
             'bmi': features.get('bmi'),
             'smoking': 1 if features.get('smoking') else 0,

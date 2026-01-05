@@ -16,7 +16,10 @@ import sys
 sys.path.insert(0, '/Users/prajanv/CardioDetect/Milestone_2')
 
 import re
-import cv2
+try:
+    import cv2
+except ImportError:
+    cv2 = None
 import numpy as np
 import joblib
 from pathlib import Path
@@ -29,6 +32,10 @@ try:
     from pipeline.integrated_pipeline import EnhancedMedicalOCR
 except ImportError:
     EnhancedMedicalOCR = None
+
+# Clinical guidelines integration
+from pipeline.clinical_advisor import ClinicalAdvisor, format_recommendations_text
+
 
 
 class UnifiedMedicalPipeline:
@@ -87,6 +94,7 @@ class UnifiedMedicalPipeline:
     ]
     
     def __init__(self, verbose: bool = True):
+        self.clinical_advisor = ClinicalAdvisor()
         self.verbose = verbose
         self.ocr = EnhancedMedicalOCR(verbose=False) if EnhancedMedicalOCR else None
         
@@ -101,7 +109,7 @@ class UnifiedMedicalPipeline:
         """Load detection and prediction models"""
         
         # Detection model (calibrated)
-        det_dir = Path('/Users/prajanv/CardioDetect/Milestone_2/models/detection_calibrated')
+        det_dir = Path('/Users/prajanv/CardioDetect/Milestone_2/models/archive/detection_calibrated')
         if det_dir.exists():
             self.detection_model = joblib.load(det_dir / 'detection_lgbm_calibrated.pkl')
             self.detection_scaler = joblib.load(det_dir / 'detection_scaler.pkl')
@@ -511,6 +519,22 @@ class UnifiedMedicalPipeline:
             },
             'raw_fields': fields,
         }
+        # Generate clinical recommendations using ClinicalAdvisor
+        advisor_features = {
+            'age': fields.get('age', self.DEFAULTS['age']),
+            'sex_code': fields.get('sex', self.DEFAULTS['sex']),
+            'systolic_bp': fields.get('systolic_bp', self.DEFAULTS['resting_bp']),
+            'diastolic_bp': fields.get('diastolic_bp', 80),
+            'total_cholesterol': fields.get('total_cholesterol', self.DEFAULTS['cholesterol']),
+            'hdl': fields.get('hdl', self.DEFAULTS['hdl']),
+            'smoking': fields.get('smoking', self.DEFAULTS['smoking']),
+            'on_bp_meds': fields.get('on_bp_meds', self.DEFAULTS['bp_meds']),
+            'on_statin': fields.get('on_statin', False),
+            'allergies': fields.get('allergies', []),
+        }
+        clinical_recs = self.clinical_advisor.generate_recommendations(advisor_features)
+        result['clinical_recommendations'] = clinical_recs
+        result['clinical_recommendations_text'] = format_recommendations_text(clinical_recs)
         
         # Print results
         self.log("\n" + "=" * 70)
@@ -534,6 +558,10 @@ class UnifiedMedicalPipeline:
         self.log(f"\n📋 Data Quality: {confidence}")
         if confidence == 'LOW':
             self.log("   ⚠️  Many fields imputed - results may be less reliable")
+        
+        if result.get('clinical_recommendations_text'):
+            self.log("\n🩺 CLINICAL RECOMMENDATIONS:")
+            self.log(result['clinical_recommendations_text'])
         
         self.log("=" * 70)
         

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileImage, X, Check, AlertCircle } from 'lucide-react';
 
@@ -9,6 +9,7 @@ interface DragDropZoneProps {
     acceptedTypes?: string[];
     maxSizeMB?: number;
     className?: string;
+    externalFile?: File | null;  // Allow parent to control file state
 }
 
 export default function DragDropZone({
@@ -16,12 +17,32 @@ export default function DragDropZone({
     acceptedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'],
     maxSizeMB = 25,
     className = '',
+    externalFile = null,
 }: DragDropZoneProps) {
     const [isDragging, setIsDragging] = useState(false);
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(externalFile);
     const [preview, setPreview] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Sync external file with internal state
+    useEffect(() => {
+        if (externalFile && externalFile !== selectedFile) {
+            setSelectedFile(externalFile);
+            setError(null);
+            // Generate preview for images
+            if (externalFile.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => setPreview(e.target?.result as string);
+                reader.readAsDataURL(externalFile);
+            } else {
+                setPreview(null);
+            }
+        } else if (!externalFile && selectedFile) {
+            setSelectedFile(null);
+            setPreview(null);
+        }
+    }, [externalFile]);
 
     const validateFile = useCallback((file: File): string | null => {
         if (!acceptedTypes.includes(file.type)) {

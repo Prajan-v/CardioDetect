@@ -75,7 +75,7 @@ export default function SettingsPage() {
             const token = localStorage.getItem('auth_token');
             if (!token) return;
 
-            const res = await fetch('http://localhost:8000/api/auth/data-deletion/', {
+            const res = await fetch(API_ENDPOINTS.auth.dataDeletion(), {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -92,21 +92,136 @@ export default function SettingsPage() {
         setExportLoading(true);
         try {
             const token = localStorage.getItem('auth_token');
-            const res = await fetch('http://localhost:8000/api/auth/data-export/', {
+            const res = await fetch(API_ENDPOINTS.auth.dataExport(), {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (res.ok) {
-                const blob = await res.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `cardiodetect_data_export_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-                setMessage({ type: 'success', text: 'Your data has been downloaded successfully!' });
+                const data = await res.json();
+                const date = new Date();
+                const userName = user?.full_name || data.profile?.full_name || 'User';
+                const userEmail = user?.email || data.profile?.email || '';
+
+                // Generate PDF using print window
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    setMessage({ type: 'error', text: 'Please allow popups to download PDF.' });
+                    setExportLoading(false);
+                    return;
+                }
+
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>CardioDetect Data Export - ${userName}</title>
+                        <style>
+                            @page { size: A4; margin: 15mm; }
+                            * { box-sizing: border-box; }
+                            body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10pt; color: #1a202c; line-height: 1.4; margin: 0; padding: 0; }
+                            .header { background: linear-gradient(135deg, #dc2626, #7c3aed); color: white; padding: 12px 15px; margin-bottom: 15px; }
+                            .header-title { font-size: 18pt; font-weight: bold; margin: 0; }
+                            .header-subtitle { font-size: 9pt; opacity: 0.9; }
+                            .section { margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden; }
+                            .section-title { background: #f7fafc; padding: 8px 12px; font-weight: bold; color: #1a365d; border-bottom: 2px solid #1a365d; font-size: 11pt; }
+                            .section-content { padding: 12px; }
+                            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+                            .info-item { padding: 6px 0; }
+                            .info-label { color: #718096; font-size: 9pt; }
+                            .info-value { color: #1a202c; font-weight: 500; }
+                            .table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+                            .table th { background: #f7fafc; padding: 8px; text-align: left; border-bottom: 2px solid #1a365d; color: #1a365d; }
+                            .table td { padding: 8px; border-bottom: 1px solid #e2e8f0; }
+                            .risk-high { color: #c53030; font-weight: bold; }
+                            .risk-moderate { color: #c05621; font-weight: bold; }
+                            .risk-low { color: #276749; font-weight: bold; }
+                            .footer { margin-top: 20px; text-align: center; font-size: 8pt; color: #718096; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+                            .disclaimer { background: #fffbeb; padding: 8px 12px; border: 1px solid #f59e0b; border-radius: 4px; font-size: 8pt; color: #92400e; margin-top: 15px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <div class="header-title">🫀 CardioDetect - Personal Data Export</div>
+                            <div class="header-subtitle">Generated on ${date.toLocaleString()}</div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">👤 Profile Information</div>
+                            <div class="section-content">
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">Full Name</div>
+                                        <div class="info-value">${userName}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Email</div>
+                                        <div class="info-value">${userEmail}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Account Created</div>
+                                        <div class="info-value">${data.profile?.date_joined ? new Date(data.profile.date_joined).toLocaleDateString() : 'N/A'}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Role</div>
+                                        <div class="info-value">${data.profile?.role || user?.role || 'Patient'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">📊 Prediction History (${data.predictions?.length || 0} records)</div>
+                            <div class="section-content">
+                                ${data.predictions && data.predictions.length > 0 ? `
+                                    <table class="table">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Risk Category</th>
+                                            <th>Risk %</th>
+                                            <th>Input Method</th>
+                                        </tr>
+                                        ${data.predictions.slice(0, 20).map((p: { created_at?: string; risk_category?: string; risk_percentage?: number; input_method?: string }) => `
+                                            <tr>
+                                                <td>${p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A'}</td>
+                                                <td class="risk-${(p.risk_category || 'moderate').toLowerCase()}">${p.risk_category || 'N/A'}</td>
+                                                <td>${p.risk_percentage?.toFixed(1) || 'N/A'}%</td>
+                                                <td>${p.input_method || 'manual'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </table>
+                                    ${data.predictions.length > 20 ? `<p style="color: #718096; font-size: 9pt; margin-top: 8px;">Showing 20 of ${data.predictions.length} records</p>` : ''}
+                                ` : '<p style="color: #718096;">No prediction history found.</p>'}
+                            </div>
+                        </div>
+                        
+                        <div class="section">
+                            <div class="section-title">🔒 Your Privacy Rights</div>
+                            <div class="section-content">
+                                <ul style="margin: 0; padding-left: 20px;">
+                                    <li><strong>Right to Access:</strong> You can download all your personal data at any time.</li>
+                                    <li><strong>Right to Erasure:</strong> You can request complete deletion of your data.</li>
+                                    <li><strong>Data Portability:</strong> Your data is exported in a portable format.</li>
+                                    <li><strong>7-Day Grace Period:</strong> Cancel deletion requests within 7 days.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="disclaimer">
+                            ⚠️ <strong>Confidential Medical Information:</strong> This document contains personal health information. 
+                            Please handle with care and do not share without proper authorization.
+                        </div>
+                        
+                        <div class="footer">
+                            CardioDetect™ - AI-Powered Cardiovascular Risk Assessment<br>
+                            Document ID: EXPORT-${Date.now()} | Generated: ${date.toISOString()}
+                        </div>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.print();
+
+                setMessage({ type: 'success', text: 'Your data has been exported to PDF!' });
             } else {
                 setMessage({ type: 'error', text: 'Failed to export data. Please try again.' });
             }
@@ -124,7 +239,7 @@ export default function SettingsPage() {
         setDeletionLoading(true);
         try {
             const token = localStorage.getItem('auth_token');
-            const res = await fetch('http://localhost:8000/api/auth/data-deletion/', {
+            const res = await fetch(API_ENDPOINTS.auth.dataDeletion(), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -151,7 +266,7 @@ export default function SettingsPage() {
         setDeletionLoading(true);
         try {
             const token = localStorage.getItem('auth_token');
-            const res = await fetch('http://localhost:8000/api/auth/data-deletion/', {
+            const res = await fetch(API_ENDPOINTS.auth.dataDeletion(), {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -620,7 +735,7 @@ export default function SettingsPage() {
                                     </h2>
                                     <p className="text-slate-400 mb-4">
                                         Download all your personal data including profile information, prediction history,
-                                        recommendations, and uploaded documents metadata in JSON format.
+                                        recommendations, and uploaded documents metadata in PDF format.
                                     </p>
                                     <motion.button
                                         onClick={handleDataExport}
@@ -709,7 +824,7 @@ export default function SettingsPage() {
                                         </li>
                                         <li className="flex items-start gap-2">
                                             <Check className="w-4 h-4 text-green-400 mt-0.5" />
-                                            <span><strong>Data Portability:</strong> Export data in standard JSON format.</span>
+                                            <span><strong>Data Portability:</strong> Export data in PDF format.</span>
                                         </li>
                                     </ul>
                                 </div>
@@ -721,7 +836,7 @@ export default function SettingsPage() {
                 {/* Help Section */}
                 <div className="mt-12 text-center">
                     <p className="text-slate-500 text-sm">
-                        Need help or found an issue? <Link href="mailto:support@cardiodetect.ai" className="text-blue-400 hover:underline">Click here</Link>
+                        Need help or found an issue? <Link href="mailto:cardiodetect.care@gmail.com" className="text-blue-400 hover:underline">Click here</Link>
                     </p>
                 </div>
             </main>

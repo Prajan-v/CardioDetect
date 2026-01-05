@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface Particle {
     id: number;
@@ -14,7 +14,11 @@ interface Particle {
 }
 
 export default function FloatingParticles() {
-    const [particles] = useState<Particle[]>(() => {
+    const [particles, setParticles] = useState<Particle[]>([]);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
         const newParticles: Particle[] = [];
         for (let i = 0; i < 20; i++) {
             newParticles.push({
@@ -27,8 +31,10 @@ export default function FloatingParticles() {
                 type: ['heart', 'dot', 'cross'][Math.floor(Math.random() * 3)] as 'heart' | 'dot' | 'cross',
             });
         }
-        return newParticles;
-    });
+        setParticles(newParticles);
+    }, []);
+
+    if (!mounted) return null;
 
     const renderParticle = (type: string, size: number) => {
         switch (type) {

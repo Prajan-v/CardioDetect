@@ -87,8 +87,8 @@ class RegisterView(APIView):
         logger = logging.getLogger(__name__)
         
         try:
-            # Build frontend URL for verification
-            frontend_url = request.build_absolute_uri('/')[:-1].replace(':8000', ':3000')
+            # Build frontend URL for verification using settings
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
             verification_url = f"{frontend_url}/verify-email?email={user.email}&token={user.email_verification_token}"
             
             logger.info(f"Sending verification email to {user.email}")
@@ -390,8 +390,8 @@ class PasswordResetRequestView(APIView):
         logger = logging.getLogger(__name__)
         
         try:
-            # Build frontend URL for reset
-            frontend_url = request.build_absolute_uri('/')[:-1].replace(':8000', ':3000')
+            # Build frontend URL for reset using settings
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
             reset_url = f"{frontend_url}/reset-password?email={user.email}&token={user.password_reset_token}"
             
             logger.info(f"Sending password reset email to {user.email}")
@@ -471,6 +471,9 @@ class PasswordResetConfirmView(APIView):
                 'message': 'Password reset successfully. You can now login with your new password.'
             })
         
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Password reset confirm errors: {serializer.errors}")
         return Response({
             'status': 'error',
             'errors': serializer.errors
@@ -522,6 +525,9 @@ class ProfileView(APIView):
     GET /api/auth/profile/ - Get profile
     PUT /api/auth/profile/ - Update profile
     PATCH /api/auth/profile/ - Partial update
+    
+    For doctors: Changes go through approval workflow
+    For patients: Changes are applied instantly
     """
     permission_classes = [IsAuthenticated]
     
@@ -533,29 +539,59 @@ class ProfileView(APIView):
         })
     
     def put(self, request):
-        serializer = UserProfileUpdateSerializer(
-            request.user,
-            data=request.data
-        )
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                'status': 'success',
-                'message': 'Profile updated successfully.',
-                'data': UserProfileSerializer(request.user).data
-            })
-        
-        return Response({
-            'status': 'error',
-            'errors': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return self._update_profile(request, partial=False)
     
     def patch(self, request):
+        return self._update_profile(request, partial=True)
+    
+    def _update_profile(self, request, partial=False):
+        user = request.user
+        
+        # For doctors: Create pending changes that require admin approval
+        if user.role == 'doctor':
+            from .pending_changes import PendingProfileChange
+            pending_created = []
+            
+            for field, new_value in request.data.items():
+                # Skip fields that shouldn't be changed via profile
+                if field in ['email', 'password', 'role', 'is_staff', 'is_superuser']:
+                    continue
+                
+                # Get current value
+                old_value = getattr(user, field, None)
+                if old_value is None and not hasattr(user, field):
+                    continue
+                    
+                # Only create pending change if value actually changed
+                if str(old_value) != str(new_value):
+                    PendingProfileChange.objects.create(
+                        user=user,
+                        field_name=field,
+                        old_value=str(old_value) if old_value else '',
+                        new_value=str(new_value),
+                        reason='Profile update via dashboard'
+                    )
+                    pending_created.append(field)
+            
+            if pending_created:
+                return Response({
+                    'status': 'pending',
+                    'message': f'Profile change(s) submitted for admin approval: {", ".join(pending_created)}',
+                    'pending_fields': pending_created,
+                    'data': UserProfileSerializer(user).data
+                })
+            else:
+                return Response({
+                    'status': 'success',
+                    'message': 'No changes detected.',
+                    'data': UserProfileSerializer(user).data
+                })
+        
+        # For patients and admins: Apply changes instantly
         serializer = UserProfileUpdateSerializer(
-            request.user,
+            user,
             data=request.data,
-            partial=True
+            partial=partial
         )
         
         if serializer.is_valid():
@@ -563,7 +599,7 @@ class ProfileView(APIView):
             return Response({
                 'status': 'success',
                 'message': 'Profile updated successfully.',
-                'data': UserProfileSerializer(request.user).data
+                'data': UserProfileSerializer(user).data
             })
         
         return Response({

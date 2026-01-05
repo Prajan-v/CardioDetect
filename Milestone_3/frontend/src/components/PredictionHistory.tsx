@@ -168,7 +168,37 @@ export default function PredictionHistory({
     };
 
     const getRiskConfig = (entry: HistoryEntry) => {
-        // Prioritize risk level for prediction results
+        // For detection mode, prioritize detection result
+        if (entry.mode === 'detection' && entry.detectionResult) {
+            return entry.detectionResult === 'positive'
+                ? { color: 'text-red-400', bg: 'bg-red-500/20', icon: AlertTriangle, label: 'Disease Detected' }
+                : { color: 'text-green-400', bg: 'bg-green-500/20', icon: CheckCircle, label: 'No Disease' };
+        }
+
+        // For prediction mode, use risk level
+        if (entry.mode === 'prediction' && entry.riskLevel) {
+            switch (entry.riskLevel) {
+                case 'low': return { color: 'text-green-400', bg: 'bg-green-500/20', icon: CheckCircle, label: 'Low Risk' };
+                case 'moderate': return { color: 'text-yellow-400', bg: 'bg-yellow-500/20', icon: AlertTriangle, label: 'Moderate Risk' };
+                case 'high': return { color: 'text-red-400', bg: 'bg-red-500/20', icon: AlertTriangle, label: 'High Risk' };
+            }
+        }
+
+        // For 'both' mode - prioritize detection result for color, show combined label
+        if (entry.mode === 'both') {
+            const isPositive = entry.detectionResult === 'positive' || entry.riskLevel === 'high';
+            const isModerate = entry.riskLevel === 'moderate';
+
+            if (isPositive) {
+                return { color: 'text-red-400', bg: 'bg-red-500/20', icon: AlertTriangle, label: 'Both Analysis' };
+            } else if (isModerate) {
+                return { color: 'text-yellow-400', bg: 'bg-yellow-500/20', icon: AlertTriangle, label: 'Both Analysis' };
+            } else {
+                return { color: 'text-green-400', bg: 'bg-green-500/20', icon: CheckCircle, label: 'Both Analysis' };
+            }
+        }
+
+        // Fallback: check if riskLevel exists
         if (entry.riskLevel) {
             switch (entry.riskLevel) {
                 case 'low': return { color: 'text-green-400', bg: 'bg-green-500/20', icon: CheckCircle, label: 'Low Risk' };
@@ -176,12 +206,14 @@ export default function PredictionHistory({
                 case 'high': return { color: 'text-red-400', bg: 'bg-red-500/20', icon: AlertTriangle, label: 'High Risk' };
             }
         }
-        // Fall back to detection result only if no risk level
+
+        // Fallback: check detection result
         if (entry.detectionResult) {
             return entry.detectionResult === 'positive'
                 ? { color: 'text-red-400', bg: 'bg-red-500/20', icon: AlertTriangle, label: 'Disease Detected' }
                 : { color: 'text-green-400', bg: 'bg-green-500/20', icon: CheckCircle, label: 'No Disease' };
         }
+
         return { color: 'text-slate-400', bg: 'bg-slate-500/20', icon: Clock, label: 'Unknown' };
     };
 
@@ -271,8 +303,10 @@ export default function PredictionHistory({
                                 <div className="flex-1 text-left">
                                     <div className={`text-sm font-medium ${config.color}`}>
                                         {config.label}
-                                        {entry.riskPercentage !== undefined && ` (${entry.riskPercentage.toFixed(1)}%)`}
-                                        {entry.detectionProbability !== undefined && ` (${entry.detectionProbability.toFixed(1)}%)`}
+                                        {/* Show appropriate percentage based on mode */}
+                                        {entry.mode === 'detection' && entry.detectionProbability !== undefined && ` (${entry.detectionProbability.toFixed(1)}%)`}
+                                        {entry.mode === 'prediction' && entry.riskPercentage !== undefined && ` (${entry.riskPercentage.toFixed(1)}%)`}
+                                        {entry.mode === 'both' && entry.riskPercentage !== undefined && ` (${entry.riskPercentage.toFixed(1)}% risk)`}
                                     </div>
                                     <div className="text-xs text-slate-500">
                                         {formatTime(entry.timestamp)} • {entry.mode}

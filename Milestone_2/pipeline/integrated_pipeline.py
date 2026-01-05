@@ -4,7 +4,7 @@ INTEGRATED DUAL-MODEL PIPELINE
 This is the CORE ML pipeline that powers CardioDetect.
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                     PIPELINE OVERVIEW                            │
+│                     PIPELINE OVERVIEW                           │
 ├─────────────────────────────────────────────────────────────────┤
 │  1. OCR: Extract text from medical documents (PDF/Images)       │
 │  2. Field Extraction: Parse medical values using regex          │
@@ -12,7 +12,7 @@ This is the CORE ML pipeline that powers CardioDetect.
 │     - Uses: Voting Ensemble (XGBoost + RandomForest + LightGBM) │
 │     - Accuracy: 91.45%                                          │
 │  4. Prediction Model: 10-year cardiovascular risk               │
-│     - Uses: XGBoost                                              │
+│     - Uses: XGBoost                                             │
 │     - Accuracy: 91.63%                                          │
 │  5. Clinical Advisor: ACC/AHA guideline recommendations         │
 └─────────────────────────────────────────────────────────────────┘
@@ -487,7 +487,7 @@ class EnhancedMedicalOCR:
         
         elif suffix in ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']:
             # =====================================
-            # STEP 2C: Direct image OCR
+            # STEP 2C: Direct image OCR 
             # =====================================
             img = cv2.imread(str(file_path))
             if img is not None:

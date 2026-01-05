@@ -53,7 +53,8 @@ function ResetPasswordForm() {
                 body: JSON.stringify({
                     email,
                     token,
-                    new_password: passwords.new_password
+                    new_password: passwords.new_password,
+                    new_password_confirm: passwords.confirm_password
                 })
             });
 
@@ -62,7 +63,15 @@ function ResetPasswordForm() {
                 setTimeout(() => router.push('/login'), 3000);
             } else {
                 const data = await res.json();
-                setError(data.detail || data.token?.[0] || 'Failed to reset password. Token may be expired.');
+                // Extract error message from various response formats
+                const errorMsg = data.detail
+                    || data.errors?.new_password?.[0]
+                    || data.errors?.token?.[0]
+                    || data.errors?.new_password_confirm?.[0]
+                    || data.errors?.email?.[0]
+                    || data.token?.[0]
+                    || 'Failed to reset password. Token may be expired.';
+                setError(errorMsg);
             }
         } catch (err) {
             setError('Network error. Please try again.');

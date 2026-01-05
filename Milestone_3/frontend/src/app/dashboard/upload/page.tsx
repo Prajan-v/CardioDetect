@@ -15,6 +15,7 @@ import DragDropZone from '@/components/DragDropZone';
 import ECGLine from '@/components/ECGLine';
 import { ShimmerDashboard } from '@/components/Shimmer';
 import FactorChart, { calculateFactors } from '@/components/FactorChart';
+import ShapWaterfall from '@/components/ShapWaterfall';
 import NotificationBell from '@/components/NotificationBell';
 import { runPrediction as apiRunPrediction, PredictionInput } from '@/services/api';
 import { getUser, logout } from '@/services/auth';
@@ -139,18 +140,28 @@ export default function MedicalReportUploadPage() {
     // Fullscreen drag handlers
     const handleFullscreenDragOver = (e: React.DragEvent) => {
         e.preventDefault();
-        setIsFullscreenDragging(true);
+        e.stopPropagation();
+        // Only show fullscreen overlay if dragging files
+        if (e.dataTransfer.types.includes('Files')) {
+            setIsFullscreenDragging(true);
+        }
     };
 
     const handleFullscreenDragLeave = (e: React.DragEvent) => {
         e.preventDefault();
-        if (e.currentTarget === e.target) {
+        e.stopPropagation();
+        // Only hide when leaving the main container (not child elements)
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX;
+        const y = e.clientY;
+        if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
             setIsFullscreenDragging(false);
         }
     };
 
     const handleFullscreenDrop = (e: React.DragEvent) => {
         e.preventDefault();
+        e.stopPropagation();
         setIsFullscreenDragging(false);
         const files = e.dataTransfer.files;
         if (files.length > 0) {
@@ -547,9 +558,25 @@ export default function MedicalReportUploadPage() {
                         </tr>
                     </table>
                     
-                    <!-- Risk Assessment -->
+                    <!-- Detection Result (for detection/both modes) -->
+                    ${result.detectionResult ? `
+                    <div class="section-title">🔴 HEART DISEASE DETECTION RESULT</div>
+                    <div class="risk-box ${result.detectionResult === 'positive' ? 'risk-high' : 'risk-low'}">
+                        <div class="risk-score" style="color: ${result.detectionResult === 'positive' ? '#c53030' : '#276749'}">
+                            ${result.detectionResult === 'positive' ? '⚠️ DISEASE DETECTED' : '✅ NO DISEASE DETECTED'}
+                        </div>
+                        <div class="risk-score">Detection Probability: ${result.detectionProbability?.toFixed(1)}%</div>
+                        <div class="risk-interp">
+                            <b>Clinical Interpretation:</b> ${result.detectionResult === 'positive'
+                        ? 'Based on the provided clinical indicators, the AI model detects signs consistent with heart disease. Immediate clinical follow-up is recommended.'
+                        : 'Based on the provided clinical indicators, no immediate signs of heart disease were detected. Continue routine monitoring.'}
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <!-- 10-Year Risk Prediction (for prediction/both modes) -->
                     ${result.riskLevel ? `
-                    <div class="section-title">CARDIOVASCULAR RISK ASSESSMENT</div>
+                    <div class="section-title">🔵 10-YEAR CARDIOVASCULAR RISK PREDICTION</div>
                     <div class="risk-box ${result.riskLevel === 'high' ? 'risk-high' : result.riskLevel === 'moderate' ? 'risk-moderate' : 'risk-low'}">
                         <div class="risk-score">10-Year ASCVD Risk Score: ${result.riskPercentage?.toFixed(1)}%</div>
                         <div class="risk-score">Risk Category: ${result.riskLevel.toUpperCase()}</div>
@@ -668,8 +695,12 @@ export default function MedicalReportUploadPage() {
             let ocrRiskPercentage = 0;
 
             try {
+                const token = localStorage.getItem('auth_token');
+                const headers: HeadersInit = token ? { 'Authorization': `Bearer ${token}` } : {};
+
                 const response = await fetch(API_ENDPOINTS.predict.ocr(), {
                     method: 'POST',
+                    headers,
                     body: formData,
                 });
 
@@ -726,39 +757,47 @@ export default function MedicalReportUploadPage() {
                 clinicalRecommendations: ocrClinicalRecs,
             };
 
-            const predInput: PredictionInput = {
-                age: extractedData.age || 50,
-                sex: extractedData.sex || 1,
-                systolic_bp: extractedData.systolic_bp || 120,
-                diastolic_bp: extractedData.diastolic_bp || 80,
-                cholesterol: extractedData.total_cholesterol || 200,
-                hdl: extractedData.hdl_cholesterol || 50,
-                glucose: extractedData.fasting_glucose || 100,
-                bmi: extractedData.bmi || 25,
-                heart_rate: extractedData.heart_rate || 75,
-                smoking: extractedData.smoking || false,
-                diabetes: extractedData.diabetes || false,
-                chest_pain_type: extractedData.cp || 0,
-                max_heart_rate: extractedData.thalach || 150,
-            };
+            // Use OCR API result first - it already saved the prediction to database with input_method=OCR
+            // Only call apiRunPrediction as a fallback if OCR didn't return prediction values
+            let finalRiskCategory = ocrRiskCategory;
+            let finalRiskPercentage = ocrRiskPercentage;
+            let featureImportance: Record<string, number> = {};
 
-            const predResult = await apiRunPrediction(predInput);
+            if (!ocrRiskCategory || ocrRiskPercentage === 0) {
+                // Fallback to local prediction only if OCR didn't return values
+                const predInput: PredictionInput = {
+                    age: extractedData.age || 50,
+                    sex: extractedData.sex || 1,
+                    systolic_bp: extractedData.systolic_bp || 120,
+                    diastolic_bp: extractedData.diastolic_bp || 80,
+                    cholesterol: extractedData.total_cholesterol || 200,
+                    hdl: extractedData.hdl_cholesterol || 50,
+                    glucose: extractedData.fasting_glucose || 100,
+                    bmi: extractedData.bmi || 25,
+                    heart_rate: extractedData.heart_rate || 75,
+                    smoking: extractedData.smoking || false,
+                    diabetes: extractedData.diabetes || false,
+                    chest_pain_type: extractedData.cp || 0,
+                    max_heart_rate: extractedData.thalach || 150,
+                };
+                const predResult = await apiRunPrediction(predInput);
+                finalRiskCategory = predResult.risk_category;
+                finalRiskPercentage = predResult.risk_percentage;
+                featureImportance = predResult.feature_importance || {};
+            }
 
             if (mode === 'detection' || mode === 'both') {
-                // Use OCR API risk percentage if available, otherwise use predResult
-                const riskPct = ocrRiskPercentage || predResult.risk_percentage;
-                analysisResult.detectionResult = riskPct > 50 ? 'positive' : 'negative';
-                analysisResult.detectionProbability = riskPct;
+                analysisResult.detectionResult = finalRiskPercentage > 50 ? 'positive' : 'negative';
+                analysisResult.detectionProbability = finalRiskPercentage;
             }
 
             if (mode === 'prediction' || mode === 'both') {
-                // Use OCR API clinical risk values if available
-                analysisResult.riskLevel = (ocrRiskCategory || predResult.risk_category).toLowerCase() as 'low' | 'moderate' | 'high';
-                analysisResult.riskPercentage = ocrRiskPercentage || predResult.risk_percentage;
+                analysisResult.riskLevel = finalRiskCategory.toLowerCase() as 'low' | 'moderate' | 'high';
+                analysisResult.riskPercentage = finalRiskPercentage;
             }
 
             // Add feature importance (SHAP-based)
-            analysisResult.featureImportance = predResult.feature_importance;
+            analysisResult.featureImportance = featureImportance;
 
             setResult(analysisResult);
             setIsProcessing(false);
@@ -766,7 +805,7 @@ export default function MedicalReportUploadPage() {
             setTimeout(() => setIsAnimating(false), 30000);
 
             // Success toast
-            toast.success('Analysis Complete', `Risk: ${predResult.risk_category} (${predResult.risk_percentage.toFixed(1)}%)`);
+            toast.success('Analysis Complete', `Risk: ${finalRiskCategory} (${finalRiskPercentage.toFixed(1)}%)`);
         } catch (error) {
             console.error('Processing error:', error);
             clearInterval(progressInterval);
@@ -938,7 +977,7 @@ export default function MedicalReportUploadPage() {
                             )}
                         </motion.div>
                         {/* Drag Drop Zone */}
-                        <DragDropZone onFileSelect={handleFileSelect} />
+                        <DragDropZone onFileSelect={handleFileSelect} externalFile={selectedFile} />
 
                         {/* Process Button */}
                         {selectedFile && !isProcessing && (
@@ -1175,6 +1214,28 @@ export default function MedicalReportUploadPage() {
                             </motion.div>
                         )}
 
+                        {/* SHAP Waterfall - Why This Prediction */}
+                        {result?.riskPercentage && result?.extractedData && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                            >
+                                <ShapWaterfall
+                                    finalValue={result.riskPercentage}
+                                    formData={{
+                                        age: String(result.extractedData.age || 45),
+                                        systolic_bp: String(result.extractedData.systolic_bp || result.extractedData.trestbps || 120),
+                                        total_cholesterol: String(result.extractedData.total_cholesterol || result.extractedData.chol || 200),
+                                        hdl_cholesterol: String(result.extractedData.hdl_cholesterol || 50),
+                                        smoking: result.extractedData.smoking ? '1' : '0',
+                                        diabetes: result.extractedData.diabetes ? '1' : '0',
+                                        bmi: String(result.extractedData.bmi || 25),
+                                    }}
+                                    animated={true}
+                                />
+                            </motion.div>
+                        )}
+
                         {/* Clinical Recommendations (ACC/AHA Guidelines) */}
                         {result?.clinicalRecommendations?.recommendations && result.clinicalRecommendations.recommendations.length > 0 && (
                             <motion.div
@@ -1216,7 +1277,7 @@ export default function MedicalReportUploadPage() {
                 {/* Help Section */}
                 <div className="mt-12 text-center">
                     <p className="text-slate-500 text-sm">
-                        Need help or found an issue? <Link href="mailto:support@cardiodetect.ai" className="text-blue-400 hover:underline">Click here</Link>
+                        Need help or found an issue? <Link href="mailto:cardiodetect.care@gmail.com" className="text-blue-400 hover:underline">Click here</Link>
                     </p>
                 </div>
             </main>

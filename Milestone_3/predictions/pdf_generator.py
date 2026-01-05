@@ -166,8 +166,49 @@ class GeneratePredictionPDFView(APIView):
         elements.append(patient_table)
         elements.append(Spacer(1, 10))
         
-        # Risk Assessment Result
-        elements.append(Paragraph("🩺 Risk Assessment Result", heading_style))
+        # ========== DETECTION MODEL RESULT ==========
+        elements.append(Paragraph("🔴 Heart Disease Detection Result", heading_style))
+        
+        detection_result = prediction.detection_result
+        detection_probability = prediction.detection_probability
+        detection_confidence = prediction.detection_confidence
+        
+        if detection_result is not None:
+            if detection_result:
+                detection_text = "DISEASE DETECTED"
+                detection_style = risk_high
+                detection_bg = '#FEE2E2'
+            else:
+                detection_text = "NO DISEASE DETECTED"
+                detection_style = risk_low
+                detection_bg = '#D1FAE5'
+            
+            detection_prob_text = f"Probability: {detection_probability*100:.1f}%" if detection_probability else ""
+            detection_conf_text = f"Confidence: {detection_confidence*100:.1f}%" if detection_confidence else ""
+            
+            detection_data = [
+                [Paragraph(detection_text, detection_style)],
+                [Paragraph(f"{detection_prob_text}  |  {detection_conf_text}" if detection_prob_text else "Detection data not available", 
+                          ParagraphStyle('DetectionPct', parent=styles['Normal'], alignment=TA_CENTER, fontSize=11, textColor=HexColor('#6B7280')))],
+            ]
+            
+            detection_table = Table(detection_data, colWidths=[15*cm])
+            detection_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), HexColor(detection_bg)),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('TOPPADDING', (0, 0), (-1, -1), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+                ('LEFTPADDING', (0, 0), (-1, -1), 20),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 20),
+            ]))
+            elements.append(detection_table)
+        else:
+            elements.append(Paragraph("Detection model was not run for this prediction.", normal_style))
+        
+        elements.append(Spacer(1, 10))
+        
+        # ========== 10-YEAR RISK PREDICTION RESULT ==========
+        elements.append(Paragraph("🔵 10-Year Cardiovascular Risk Prediction", heading_style))
         
         # Risk category box
         risk_category = prediction.risk_category or 'N/A'
@@ -184,7 +225,7 @@ class GeneratePredictionPDFView(APIView):
             risk_bg = '#D1FAE5'
         
         risk_data = [
-            [Paragraph(f"{risk_category}", risk_style)],
+            [Paragraph(f"{risk_category} RISK", risk_style)],
             [Paragraph(f"{risk_percentage:.1f}% 10-Year Risk" if risk_percentage else "Risk percentage not available", 
                       ParagraphStyle('RiskPct', parent=styles['Normal'], alignment=TA_CENTER, fontSize=12))],
         ]
@@ -197,7 +238,6 @@ class GeneratePredictionPDFView(APIView):
             ('BOTTOMPADDING', (0, 0), (-1, -1), 15),
             ('LEFTPADDING', (0, 0), (-1, -1), 20),
             ('RIGHTPADDING', (0, 0), (-1, -1), 20),
-            ('ROUNDEDCORNERS', [10, 10, 10, 10]),
         ]))
         elements.append(risk_table)
         elements.append(Spacer(1, 10))

@@ -39,17 +39,12 @@ class SubmitProfileChangeView(APIView):
             reason=reason
         )
 
-        # Send confirmation email to user
-        from .email_service import send_change_submitted_email, send_admin_change_pending_notification
+        # Send confirmation email to user only
+        from .email_service import send_change_submitted_email
         send_change_submitted_email(change)
-        
-        # Notify admins about pending change
-        admin_users = User.objects.filter(role='admin', is_active=True)
-        for admin in admin_users:
-            send_admin_change_pending_notification(admin.email, change)
 
         return Response({
-            'message': 'Change submitted for admin approval',
+            'message': 'Change submitted for admin approval. You will be notified once reviewed.',
             'change_id': change.id,
             'status': change.status
         }, status=status.HTTP_201_CREATED)

@@ -24,24 +24,27 @@ export default function NotificationsPage() {
 
     const fetchNotifications = async () => {
         try {
-            const res = await authFetch(getApiUrl('auth/notifications/'));
+            const res = await authFetch(getApiUrl('notifications/'));
             if (res.ok) {
                 const data = await res.json();
+                // Handle both paginated response {results: [...]} and plain array
+                const notificationList = Array.isArray(data) ? data : (data.results || []);
                 // Map backend fields to frontend interface
                 interface BackendNotification {
                     id: string;
-                    type: 'info' | 'warning' | 'success' | 'error' | 'prediction';
+                    notification_type?: string;
+                    type?: 'info' | 'warning' | 'success' | 'error' | 'prediction';
                     title: string;
                     message: string;
-                    time_ago: string;
+                    created_at?: string;
                     is_read: boolean;
                 }
-                const mapped = data.map((item: BackendNotification) => ({
+                const mapped = notificationList.map((item: BackendNotification) => ({
                     id: item.id,
-                    type: item.type, // Serializer maps notification_type -> type
+                    type: item.type || item.notification_type || 'info',
                     title: item.title,
                     message: item.message,
-                    time_ago: item.time_ago,
+                    time_ago: item.created_at ? formatTimeAgo(item.created_at) : 'Just now',
                     read: item.is_read
                 }));
                 setNotifications(mapped);
@@ -53,13 +56,27 @@ export default function NotificationsPage() {
         }
     };
 
+    // Helper to format time ago
+    const formatTimeAgo = (dateStr: string): string => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        const diffHours = Math.floor(diffMins / 60);
+        if (diffHours < 24) return `${diffHours}h ago`;
+        const diffDays = Math.floor(diffHours / 24);
+        return `${diffDays}d ago`;
+    };
+
     useEffect(() => {
         fetchNotifications();
     }, []);
 
     const markAllRead = async () => {
         try {
-            await authFetch(getApiUrl('auth/notifications/mark_all_read/'), { method: 'POST' });
+            await authFetch(getApiUrl('notifications/read/'), { method: 'POST' });
             setNotifications(notifications.map(n => ({ ...n, read: true })));
         } catch (error) {
             console.error('Failed to mark all read', error);
@@ -68,7 +85,7 @@ export default function NotificationsPage() {
 
     const markAsRead = async (id: string) => {
         try {
-            await authFetch(getApiUrl(`auth/notifications/${id}/mark_read/`), { method: 'POST' });
+            await authFetch(getApiUrl(`notifications/${id}/read/`), { method: 'POST' });
             setNotifications(notifications.map(n => n.id === id ? { ...n, read: true } : n));
         } catch (error) {
             console.error('Failed to mark read', error);
@@ -77,7 +94,7 @@ export default function NotificationsPage() {
 
     const deleteNotification = async (id: string) => {
         try {
-            await authFetch(getApiUrl(`auth/notifications/${id}/`), { method: 'DELETE' });
+            await authFetch(getApiUrl(`notifications/${id}/`), { method: 'DELETE' });
             setNotifications(notifications.filter(n => n.id !== id));
         } catch (error) {
             console.error('Failed to delete notification', error);
@@ -186,7 +203,7 @@ export default function NotificationsPage() {
                 {/* Help Section */}
                 <div className="mt-12 text-center">
                     <p className="text-slate-500 text-sm">
-                        Need help or found an issue? <Link href="mailto:support@cardiodetect.ai" className="text-blue-400 hover:underline">Click here</Link>
+                        Need help or found an issue? <Link href="mailto:cardiodetect.care@gmail.com" className="text-blue-400 hover:underline">Click here</Link>
                     </p>
                 </div>
             </main>

@@ -34,6 +34,9 @@ export const API_ENDPOINTS = {
         adminPendingChanges: () => getApiUrl('auth/admin/pending-changes/'),
         adminApprove: (changeId: number) => getApiUrl(`auth/admin/approve/${changeId}/`),
         adminReject: (changeId: number) => getApiUrl(`auth/admin/reject/${changeId}/`),
+        dataDeletion: () => getApiUrl('auth/data-deletion/'),
+        dataExport: () => getApiUrl('auth/data-export/'),
+        adminDeletionRequests: () => getApiUrl('auth/admin/deletion-requests/'),
     },
 
     // Prediction endpoints

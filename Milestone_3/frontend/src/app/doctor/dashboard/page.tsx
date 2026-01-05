@@ -6,7 +6,8 @@ import {
     Heart, Activity, User, LogOut, FileUp,
     AlertTriangle, CheckCircle, Clock, Zap,
     ChevronDown, TrendingUp, Shield, Stethoscope, BarChart3, Info,
-    Bell, Users, Plus, Search, Settings
+    Bell, Users, Plus, Search, Settings, Mail, Download, Upload,
+    Calendar, MessageSquare, X, Scale, FileText, Check
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -86,6 +87,28 @@ export default function DoctorDashboard() {
     const [newPatientEmail, setNewPatientEmail] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
+    // New features state
+    const [selectedPatients, setSelectedPatients] = useState<Set<string>>(new Set());
+    const [patientNotes, setPatientNotes] = useState<Record<string, { note: string; date: string }[]>>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('patientNotes');
+            return saved ? JSON.parse(saved) : {};
+        }
+        return {};
+    });
+    const [patientFollowUps, setPatientFollowUps] = useState<Record<string, string>>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('patientFollowUps');
+            return saved ? JSON.parse(saved) : {};
+        }
+        return {};
+    });
+    const [showNotesModal, setShowNotesModal] = useState<string | null>(null);
+    const [showCompareModal, setShowCompareModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [currentNote, setCurrentNote] = useState('');
+    const [importResult, setImportResult] = useState<{ success: number; failed: number } | null>(null);
+
     useEffect(() => {
         fetchDashboard();
     }, []);
@@ -122,8 +145,9 @@ export default function DoctorDashboard() {
             const res = await fetch(API_ENDPOINTS.doctor.patients(), {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: newPatientEmail })  // Backend expects 'email' not 'patient_email'
+                body: JSON.stringify({ email: newPatientEmail.toLowerCase().trim() })
             });
+
             if (res.ok) {
                 setNewPatientEmail('');
                 fetchDashboard();
@@ -134,19 +158,32 @@ export default function DoctorDashboard() {
                     duration: 5000,
                 });
             } else {
-                const error = await res.json();
+                let errorMessage = 'Failed to add patient';
+                try {
+                    const error = await res.json();
+                    errorMessage = error.error || error.detail || error.message || errorMessage;
+                } catch {
+                    // If response is not JSON
+                    if (res.status === 404) {
+                        errorMessage = 'No patient found with this email. The patient must register first.';
+                    } else if (res.status === 400) {
+                        errorMessage = 'Patient is already assigned or invalid email.';
+                    } else if (res.status === 403) {
+                        errorMessage = 'You do not have permission to add patients.';
+                    }
+                }
                 showNotification({
-                    title: 'Error',
-                    message: error.error || 'Failed to add patient',
+                    title: 'Cannot Add Patient',
+                    message: errorMessage,
                     type: 'error',
-                    duration: 5000,
+                    duration: 7000,
                 });
             }
         } catch (err) {
-            console.error('Failed to add patient');
+            console.error('Failed to add patient:', err);
             showNotification({
-                title: 'Error',
-                message: 'Failed to add patient. Please try again.',
+                title: 'Connection Error',
+                message: 'Could not connect to server. Please check your connection and try again.',
                 type: 'error',
                 duration: 5000,
             });
@@ -238,6 +275,121 @@ export default function DoctorDashboard() {
         }
     };
 
+    // ===== NEW FEATURE FUNCTIONS =====
+
+    // Save clinical note for a patient
+    const saveNote = (patientId: string) => {
+        if (!currentNote.trim()) return;
+        const newNotes = {
+            ...patientNotes,
+            [patientId]: [...(patientNotes[patientId] || []), { note: currentNote, date: new Date().toISOString() }]
+        };
+        setPatientNotes(newNotes);
+        localStorage.setItem('patientNotes', JSON.stringify(newNotes));
+        setCurrentNote('');
+        showNotification({ title: 'Note Saved', message: 'Clinical note added successfully', type: 'success', duration: 3000 });
+    };
+
+    // Save follow-up date
+    const saveFollowUp = (patientId: string, date: string) => {
+        const newFollowUps = { ...patientFollowUps, [patientId]: date };
+        setPatientFollowUps(newFollowUps);
+        localStorage.setItem('patientFollowUps', JSON.stringify(newFollowUps));
+        showNotification({ title: 'Follow-up Scheduled', message: `Reminder set for ${new Date(date).toLocaleDateString()}`, type: 'success', duration: 3000 });
+    };
+
+    // Toggle patient selection for comparison
+    const togglePatientSelection = (patientId: string) => {
+        const newSet = new Set(selectedPatients);
+        if (newSet.has(patientId)) newSet.delete(patientId);
+        else if (newSet.size < 3) newSet.add(patientId); // Max 3 patients to compare
+        else showNotification({ title: 'Limit Reached', message: 'You can compare up to 3 patients', type: 'warning', duration: 2000 });
+        setSelectedPatients(newSet);
+    };
+
+    // Export patient list as PDF
+    const exportPatientList = () => {
+        const patients = data?.patients || [];
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+
+        printWindow.document.write(`
+            <!DOCTYPE html><html><head><title>Patient List - CardioDetect</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; }
+                h1 { color: #1a365d; border-bottom: 2px solid #dc2626; padding-bottom: 10px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                th { background: #f7fafc; padding: 12px; text-align: left; border-bottom: 2px solid #1a365d; }
+                td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+                .high { color: #c53030; font-weight: bold; }
+                .moderate { color: #c05621; font-weight: bold; }
+                .low { color: #276749; font-weight: bold; }
+                .footer { margin-top: 30px; text-align: center; color: #718096; font-size: 12px; }
+            </style></head><body>
+            <h1>🫀 CardioDetect - Patient List</h1>
+            <p>Generated on ${new Date().toLocaleString()} | Total: ${patients.length} patients</p>
+            <table>
+                <tr><th>#</th><th>Name</th><th>Email</th><th>Risk Level</th><th>Predictions</th><th>Follow-up</th></tr>
+                ${patients.map((p, i) => `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${p.name}</td>
+                        <td>${p.email}</td>
+                        <td class="${(p.risk_category || 'none').toLowerCase()}">${p.risk_category || 'N/A'}</td>
+                        <td>${p.predictions_count}</td>
+                        <td>${patientFollowUps[p.id] ? new Date(patientFollowUps[p.id]).toLocaleDateString() : '-'}</td>
+                    </tr>
+                `).join('')}
+            </table>
+            <div class="footer">CardioDetect™ - AI-Powered Cardiovascular Risk Assessment</div>
+            </body></html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    };
+
+    // Handle CSV import
+    const handleCSVImport = async (file: File) => {
+        const text = await file.text();
+        const lines = text.split('\n').filter(l => l.trim());
+        let success = 0, failed = 0;
+
+        for (let i = 1; i < lines.length; i++) { // Skip header
+            const [email] = lines[i].split(',').map(s => s.trim().replace(/"/g, ''));
+            if (email && email.includes('@')) {
+                try {
+                    const token = localStorage.getItem('auth_token');
+                    const res = await fetch(API_ENDPOINTS.doctor.patients(), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ email: email })
+                    });
+                    if (res.ok) success++; else failed++;
+                } catch { failed++; }
+            }
+        }
+        setImportResult({ success, failed });
+        if (success > 0) fetchDashboard();
+    };
+
+    // Send report to patient via email
+    const sendReportToPatient = (patient: { email: string; name: string; risk_category: string | null }) => {
+        if (!patient.email) {
+            showNotification({ title: 'Error', message: 'Patient email not found', type: 'error' });
+            return;
+        }
+        const subject = encodeURIComponent(`CardioDetect Health Assessment Report`);
+        const body = encodeURIComponent(`Dear ${patient.name},\n\nYour cardiovascular risk assessment has been completed.\n\nRisk Category: ${patient.risk_category || 'Pending'}\n\nPlease log in to CardioDetect to view your full report and recommendations.\n\nBest regards,\nDr. ${data?.doctor.name || 'Your Doctor'}\nCardioDetect Medical Team`);
+        window.location.href = `mailto:${patient.email}?subject=${subject}&body=${body}`;
+    };
+
+    // Check if follow-up is due
+    const isFollowUpDue = (patientId: string) => {
+        const date = patientFollowUps[patientId];
+        if (!date) return false;
+        return new Date(date) <= new Date();
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-[#0a0a1a] flex items-center justify-center">
@@ -262,8 +414,19 @@ export default function DoctorDashboard() {
                         <Link href="/doctor/dashboard" className="flex items-center gap-3">
                             <div className="w-8 h-8"><AnimatedHeart className="w-full h-full" /></div>
                             <span className="text-xl font-bold gradient-text">CardioDetect</span>
-                            <span className="text-slate-500 text-sm hidden sm:block">• Doctor Portal</span>
                         </Link>
+
+                        <div className="hidden md:flex items-center gap-6">
+                            <Link href="/doctor/dashboard" className="text-white font-medium flex items-center gap-2">
+                                <Activity className="w-4 h-4" />Dashboard
+                            </Link>
+                            <Link href="/doctor/upload" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                                <FileUp className="w-4 h-4" />Medical Report Upload
+                            </Link>
+                            <Link href="/analytics" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4" />Analytics
+                            </Link>
+                        </div>
 
                         <div className="relative">
                             <button onClick={() => setShowDropdown(!showDropdown)} className="flex items-center gap-2 glass-card px-4 py-2 hover:bg-white/10 transition-colors">
@@ -521,6 +684,10 @@ export default function DoctorDashboard() {
                                         Add Patient
                                     </motion.button>
                                 </div>
+                                <p className="text-xs text-slate-500 mt-3 flex items-center gap-1.5">
+                                    <Info className="w-3.5 h-3.5" />
+                                    Patient must be registered on CardioDetect first. Enter their account email to add them to your list.
+                                </p>
                             </div>
 
                             {/* Risk Distribution */}
@@ -539,14 +706,35 @@ export default function DoctorDashboard() {
 
                             {/* Patient List */}
                             <div className="glass-card p-6">
-                                <div className="flex items-center justify-between mb-6">
+                                {/* Header with Action Buttons */}
+                                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                                     <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                                         <Users className="w-5 h-5 text-blue-400" />My Patients
                                     </h2>
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                        <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                                            className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white placeholder-slate-500 w-48" />
+                                    <div className="flex items-center gap-3">
+                                        {/* Export Button */}
+                                        <motion.button onClick={exportPatientList} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                                            className="px-3 py-2 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-xl text-sm flex items-center gap-2 hover:bg-blue-500/30">
+                                            <Download className="w-4 h-4" />Export PDF
+                                        </motion.button>
+                                        {/* Import CSV Button */}
+                                        <motion.button onClick={() => setShowImportModal(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                                            className="px-3 py-2 bg-green-500/20 border border-green-500/30 text-green-400 rounded-xl text-sm flex items-center gap-2 hover:bg-green-500/30">
+                                            <Upload className="w-4 h-4" />Import CSV
+                                        </motion.button>
+                                        {/* Compare Button */}
+                                        {selectedPatients.size > 1 && (
+                                            <motion.button onClick={() => setShowCompareModal(true)} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                                                className="px-3 py-2 bg-purple-500/20 border border-purple-500/30 text-purple-400 rounded-xl text-sm flex items-center gap-2 hover:bg-purple-500/30">
+                                                <Scale className="w-4 h-4" />Compare ({selectedPatients.size})
+                                            </motion.button>
+                                        )}
+                                        {/* Search */}
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                            <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                                                className="bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white placeholder-slate-500 w-40" />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -559,21 +747,46 @@ export default function DoctorDashboard() {
                                     <div className="space-y-3">
                                         {filteredPatients.map((patient) => {
                                             const style = getRiskStyle(patient.risk_category);
+                                            const hasDueFollowUp = isFollowUpDue(patient.id);
                                             return (
-                                                <motion.div key={patient.id} whileHover={{ scale: 1.01 }}
-                                                    className={`flex items-center justify-between p-4 rounded-xl bg-white/5 border ${style.border} cursor-pointer hover:bg-white/10`}>
+                                                <motion.div key={patient.id} whileHover={{ scale: 1.005 }}
+                                                    className={`flex items-center justify-between p-4 rounded-xl bg-white/5 border ${style.border} ${hasDueFollowUp ? 'ring-2 ring-orange-500/50' : ''}`}>
                                                     <div className="flex items-center gap-4">
+                                                        {/* Selection Checkbox */}
+                                                        <input type="checkbox" checked={selectedPatients.has(patient.id)}
+                                                            onChange={() => togglePatientSelection(patient.id)}
+                                                            className="w-4 h-4 rounded border-white/30 bg-white/10 text-red-500 focus:ring-red-500" />
                                                         <div className={`w-10 h-10 rounded-full ${style.bg} flex items-center justify-center`}>
                                                             <User className={`w-5 h-5 ${style.text}`} />
                                                         </div>
                                                         <div>
-                                                            <div className="text-white font-medium">{patient.name}</div>
+                                                            <div className="text-white font-medium flex items-center gap-2">
+                                                                {patient.name}
+                                                                {hasDueFollowUp && <span className="px-1.5 py-0.5 text-xs bg-orange-500/20 text-orange-400 rounded">Follow-up Due</span>}
+                                                            </div>
                                                             <div className="text-slate-500 text-sm">{patient.email}</div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-right">
-                                                        <div className={`font-medium ${style.text}`}>{patient.risk_category || 'No Assessment'}</div>
-                                                        <div className="text-slate-500 text-xs">{patient.predictions_count} predictions</div>
+                                                    <div className="flex items-center gap-4">
+                                                        {/* Risk Info */}
+                                                        <div className="text-right mr-4">
+                                                            <div className={`font-medium ${style.text}`}>{patient.risk_category || 'No Assessment'}</div>
+                                                            <div className="text-slate-500 text-xs">{patient.predictions_count} predictions</div>
+                                                        </div>
+                                                        {/* Action Buttons */}
+                                                        <div className="flex items-center gap-1">
+                                                            <button onClick={() => setShowNotesModal(patient.id)} title="Clinical Notes"
+                                                                className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-blue-400 transition-colors">
+                                                                <MessageSquare className="w-4 h-4" />
+                                                            </button>
+                                                            <button onClick={() => sendReportToPatient(patient)} title="Send Report via Email"
+                                                                className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-green-400 transition-colors">
+                                                                <Mail className="w-4 h-4" />
+                                                            </button>
+                                                            <input type="date" value={patientFollowUps[patient.id] || ''} onChange={(e) => saveFollowUp(patient.id, e.target.value)}
+                                                                title="Schedule Follow-up"
+                                                                className="w-8 h-8 p-1 rounded-lg bg-transparent hover:bg-white/10 text-slate-400 cursor-pointer" />
+                                                        </div>
                                                     </div>
                                                 </motion.div>
                                             );
@@ -581,6 +794,10 @@ export default function DoctorDashboard() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Hidden CSV Input */}
+                            <input type="file" id="csvInput" accept=".csv" className="hidden"
+                                onChange={(e) => { if (e.target.files?.[0]) handleCSVImport(e.target.files[0]); }} />
                         </motion.div>
                     )}
 
@@ -602,11 +819,132 @@ export default function DoctorDashboard() {
                     {/* Help Section */}
                     <div className="mt-12 text-center">
                         <p className="text-slate-500 text-sm">
-                            Need help or found an issue? <Link href="mailto:support@cardiodetect.ai" className="text-blue-400 hover:underline">Click here</Link>
+                            Need help or found an issue? <Link href="mailto:cardiodetect.care@gmail.com" className="text-blue-400 hover:underline">Click here</Link>
                         </p>
                     </div>
                 </AnimatePresence>
             </main>
+
+            {/* ===== MODALS ===== */}
+
+            {/* Clinical Notes Modal */}
+            <AnimatePresence>
+                {showNotesModal && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setShowNotesModal(null)}>
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+                            className="glass-card p-6 w-full max-w-lg" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <MessageSquare className="w-5 h-5 text-blue-400" />Clinical Notes
+                                </h3>
+                                <button onClick={() => setShowNotesModal(null)} className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <textarea value={currentNote} onChange={(e) => setCurrentNote(e.target.value)} rows={3} placeholder="Add clinical observation..."
+                                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white placeholder-slate-500 mb-4" />
+                            <button onClick={() => { saveNote(showNotesModal); }} className="w-full py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600">
+                                Save Note
+                            </button>
+                            {patientNotes[showNotesModal]?.length > 0 && (
+                                <div className="mt-4 max-h-48 overflow-y-auto space-y-2">
+                                    <h4 className="text-sm font-medium text-slate-400 mb-2">Previous Notes:</h4>
+                                    {patientNotes[showNotesModal].slice().reverse().map((n, i) => (
+                                        <div key={i} className="p-3 bg-white/5 rounded-lg">
+                                            <p className="text-white text-sm">{n.note}</p>
+                                            <p className="text-slate-500 text-xs mt-1">{new Date(n.date).toLocaleString()}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Patient Comparison Modal */}
+            <AnimatePresence>
+                {showCompareModal && selectedPatients.size > 1 && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setShowCompareModal(false)}>
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+                            className="glass-card p-6 w-full max-w-3xl" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <Scale className="w-5 h-5 text-purple-400" />Patient Comparison
+                                </h3>
+                                <button onClick={() => setShowCompareModal(false)} className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-3 gap-4">
+                                {Array.from(selectedPatients).map(id => {
+                                    const p = data?.patients.find(pt => pt.id === id);
+                                    const style = getRiskStyle(p?.risk_category || null);
+                                    return p && (
+                                        <div key={id} className={`p-4 rounded-xl border ${style.border} bg-white/5`}>
+                                            <div className={`w-12 h-12 mx-auto rounded-full ${style.bg} flex items-center justify-center mb-3`}>
+                                                <User className={`w-6 h-6 ${style.text}`} />
+                                            </div>
+                                            <h4 className="text-white font-medium text-center">{p.name}</h4>
+                                            <div className={`text-center text-lg font-bold ${style.text} mt-2`}>{p.risk_category || 'N/A'}</div>
+                                            <div className="text-slate-500 text-sm text-center mt-1">{p.predictions_count} predictions</div>
+                                            {patientFollowUps[id] && (
+                                                <div className="text-xs text-center mt-2 text-orange-400">
+                                                    Follow-up: {new Date(patientFollowUps[id]).toLocaleDateString()}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <button onClick={() => { setShowCompareModal(false); setSelectedPatients(new Set()); }}
+                                className="mt-6 w-full py-3 bg-white/10 text-white rounded-xl font-semibold hover:bg-white/20">
+                                Close & Clear Selection
+                            </button>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* CSV Import Modal */}
+            <AnimatePresence>
+                {showImportModal && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => { setShowImportModal(false); setImportResult(null); }}>
+                        <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+                            className="glass-card p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                                    <Upload className="w-5 h-5 text-green-400" />Import Patients from CSV
+                                </h3>
+                                <button onClick={() => { setShowImportModal(false); setImportResult(null); }} className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <p className="text-slate-400 text-sm mb-4">Upload a CSV file with patient emails. Format: <code className="bg-white/10 px-1 rounded">email</code> (one per line, with header)</p>
+                            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-xl cursor-pointer hover:bg-white/5">
+                                <Upload className="w-8 h-8 text-slate-500 mb-2" />
+                                <span className="text-slate-400 text-sm">Click to upload CSV</span>
+                                <input type="file" accept=".csv" className="hidden" onChange={(e) => { if (e.target.files?.[0]) handleCSVImport(e.target.files[0]); }} />
+                            </label>
+                            {importResult && (
+                                <div className="mt-4 p-4 rounded-xl bg-white/5">
+                                    <div className="flex items-center gap-2 text-green-400 mb-1">
+                                        <Check className="w-4 h-4" />{importResult.success} imported successfully
+                                    </div>
+                                    {importResult.failed > 0 && (
+                                        <div className="flex items-center gap-2 text-red-400">
+                                            <X className="w-4 h-4" />{importResult.failed} failed (not registered or already added)
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

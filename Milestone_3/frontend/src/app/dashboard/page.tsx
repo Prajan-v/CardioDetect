@@ -14,6 +14,7 @@ import FloatingParticles from '@/components/FloatingParticles';
 import { ShimmerDashboard } from '@/components/Shimmer';
 import RiskGauge from '@/components/RiskGauge';
 import FactorChart, { calculateFactors } from '@/components/FactorChart';
+import ShapWaterfall from '@/components/ShapWaterfall';
 import PredictionHistory, { saveToHistory, HistoryEntry } from '@/components/PredictionHistory';
 import ThemeToggle from '@/components/ThemeToggle';
 import AdminPanel from '@/components/AdminPanel';
@@ -358,6 +359,8 @@ export default function DashboardPage() {
                 major_vessels: parseInt(formData.ca) || 0,
                 thalassemia: parseInt(formData.thal) || 1,
                 resting_ecg: parseInt(formData.restecg) || 0,
+                // Analysis mode - send to backend
+                model_used: mode,
             };
 
             // Call API (falls back to local calculation if unavailable)
@@ -559,6 +562,9 @@ export default function DashboardPage() {
                             </Link>
                             <Link href="/dashboard/upload" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
                                 <FileUp className="w-4 h-4" />Medical Report Upload
+                            </Link>
+                            <Link href="/analytics" className="text-slate-400 hover:text-white transition-colors flex items-center gap-2">
+                                <BarChart3 className="w-4 h-4" />Analytics
                             </Link>
                         </div>
 
@@ -787,21 +793,7 @@ export default function DashboardPage() {
                             </div>
                         </div>
 
-                        {/* Risk Gauge Visualization */}
-                        {predictionResult && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                className="glass-card p-6"
-                            >
-                                <RiskGauge
-                                    value={predictionResult.riskPercentage}
-                                    size={220}
-                                    label="10-Year Cardiovascular Risk"
-                                    animated={isAnimating}
-                                />
-                            </motion.div>
-                        )}
+
 
                         {/* Factor Contribution Chart */}
                         {(predictionResult || detectionResult) && Object.keys(formData).length > 0 && (
@@ -813,6 +805,21 @@ export default function DashboardPage() {
                                 <FactorChart
                                     factors={calculateFactors(formData, mode === 'both' ? 'prediction' : mode)}
                                     title="Risk Factor Breakdown"
+                                    animated={true}
+                                />
+                            </motion.div>
+                        )}
+
+                        {/* SHAP Waterfall Explanation */}
+                        {predictionResult && Object.keys(formData).length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                            >
+                                <ShapWaterfall
+                                    finalValue={predictionResult.riskPercentage}
+                                    formData={formData}
                                     animated={true}
                                 />
                             </motion.div>

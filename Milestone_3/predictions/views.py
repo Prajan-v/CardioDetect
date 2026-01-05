@@ -118,7 +118,7 @@ class ManualPredictionView(APIView):
                 prediction.clinical_max_score = result.get('clinical_max_score')
                 prediction.recommendations = result.get('recommendations', '')
                 prediction.risk_factors = result.get('risk_factors', [])
-                prediction.model_used = result.get('model_used', 'prediction')
+                prediction.model_used = data.get('model_used', 'prediction')
             else:
                 # Fallback: Clinical assessment only
                 prediction.risk_category = self._calculate_clinical_risk(data)

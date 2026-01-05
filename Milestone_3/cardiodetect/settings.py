@@ -189,15 +189,15 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ],
-    # Rate limiting (adjusted for development - reduce in production)
+    # Rate limiting (generous limits for development)
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '200/hour',       # Anonymous: 200 requests/hour
-        'user': '1000/hour',      # Authenticated: 1000 requests/hour  
-        'predictions': '200/hour',  # Prediction endpoint specific
+        'anon': '1000/hour',       # Anonymous: 1000 requests/hour
+        'user': '5000/hour',       # Authenticated: 5000 requests/hour  
+        'predictions': '500/hour', # Prediction endpoint specific
     }
 }
 

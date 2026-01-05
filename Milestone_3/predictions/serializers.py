@@ -52,6 +52,13 @@ class ManualInputSerializer(serializers.Serializer):
     major_vessels = serializers.IntegerField(min_value=0, max_value=3, required=False)
     thalassemia = serializers.IntegerField(min_value=1, max_value=3, required=False)
     resting_ecg = serializers.IntegerField(min_value=0, max_value=2, required=False)
+    
+    # Analysis mode (detection, prediction, both)
+    model_used = serializers.ChoiceField(
+        choices=['detection', 'prediction', 'both'],
+        required=False,
+        default='prediction'
+    )
 
 
 class OCRUploadSerializer(serializers.Serializer):
@@ -86,8 +93,8 @@ class PredictionHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Prediction
         fields = [
-            'id', 'input_method', 'risk_category', 'risk_percentage',
-            'risk_color', 'risk_emoji', 'detection_result',
+            'id', 'input_method', 'model_used', 'risk_category', 'risk_percentage',
+            'risk_color', 'risk_emoji', 'detection_result', 'detection_probability',
             'created_at', 'processing_time_ms'
         ]
 

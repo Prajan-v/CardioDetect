@@ -76,7 +76,7 @@ export default function AdminApprovalPage() {
             const token = localStorage.getItem('auth_token');
             if (!token) return;
 
-            const res = await fetch('http://localhost:8000/api/auth/admin/deletion-requests/', {
+            const res = await fetch(API_ENDPOINTS.auth.adminDeletionRequests(), {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -182,8 +182,8 @@ export default function AdminApprovalPage() {
                     <button
                         onClick={() => setActiveTab('changes')}
                         className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'changes'
-                                ? 'bg-purple-500/30 text-purple-300 border border-purple-500/50'
-                                : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
+                            ? 'bg-purple-500/30 text-purple-300 border border-purple-500/50'
+                            : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
                             }`}
                     >
                         📋 Profile Changes ({changes.length})
@@ -191,8 +191,8 @@ export default function AdminApprovalPage() {
                     <button
                         onClick={() => setActiveTab('deletions')}
                         className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeTab === 'deletions'
-                                ? 'bg-red-500/30 text-red-300 border border-red-500/50'
-                                : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
+                            ? 'bg-red-500/30 text-red-300 border border-red-500/50'
+                            : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10'
                             }`}
                     >
                         🗑️ Deletion Requests ({deletionCounts.pending})

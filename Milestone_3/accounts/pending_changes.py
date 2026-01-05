@@ -70,9 +70,12 @@ class PendingProfileChange(models.Model):
             setattr(self.user, self.field_name, self.new_value)
             self.user.save(update_fields=[self.field_name])
         
-        # Send approval email notification
-        from .email_service import send_change_approved_email
-        send_change_approved_email(self)
+        # Try to send approval email notification (optional)
+        try:
+            from .email_service import send_profile_change_notification
+            send_profile_change_notification(self.user, self.field_name, 'approved')
+        except Exception:
+            pass  # Email notification is optional
     
     def reject(self, admin_user, notes=''):
         """Reject the change request."""
@@ -82,6 +85,9 @@ class PendingProfileChange(models.Model):
         self.reviewed_at = timezone.now()
         self.save()
         
-        # Send rejection email notification
-        from .email_service import send_change_rejected_email
-        send_change_rejected_email(self)
+        # Try to send rejection email notification (optional)
+        try:
+            from .email_service import send_profile_change_notification
+            send_profile_change_notification(self.user, self.field_name, 'rejected')
+        except Exception:
+            pass  # Email notification is optional
