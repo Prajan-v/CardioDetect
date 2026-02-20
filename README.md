@@ -111,9 +111,9 @@ cd Milestone_3/frontend && npm i && npm run dev   # UI   → localhost:3000
 > **Reproducibility:** To reproduce training results, run the notebooks located in `Milestone_1/` and `Milestone_2/`.
 
 <div align="center">
-  <img src="docs/assets/ui_1.png" width="800" alt="CardioDetect Risk Assessment Dashboard" style="margin-bottom: 20px;" />
-  <img src="docs/assets/ui_2.png" width="800" alt="Patient Clinical History" style="margin-bottom: 20px;" />
-  <img src="docs/assets/ui_3.png" width="800" alt="Detailed Laboratory Report Output" />
+  <img src="docs/assets/ui_1.png" width="800" alt="Detailed Laboratory Report Output" style="margin-bottom: 20px;" />
+  <img src="docs/assets/ui_4.png" width="800" alt="CardioDetect Risk Assessment Dashboard" style="margin-bottom: 20px;" />
+  <img src="docs/assets/ui_3.png" width="800" alt="Patient Clinical History" />
 </div>
 
 ---
