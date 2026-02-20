@@ -10,19 +10,10 @@
   <a href="https://doi.org/10.36227/techrxiv.177154153.36052407/v1"><img src="https://img.shields.io/badge/Preprint-TechRxiv-0066cc?style=flat-square&logo=ieee&logoColor=white" alt="TechRxiv"></a>
   <a href="https://orcid.org/0009-0008-3295-2950"><img src="https://img.shields.io/badge/ORCID-0009--0008--3295--2950-A6CE39?style=flat-square&logo=orcid&logoColor=white" alt="ORCID"></a>
   <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status">
+  <img src="https://img.shields.io/badge/coverage-84%25-brightgreen?style=flat-square" alt="Coverage">
 </p>
 
-<p><em>Upload a medical report and receive an automated cardiovascular risk assessment — no manual data entry required.</em></p>
-
-</div>
-
----
-
-## Overview
-
-CardioDetect is a research-driven, production-oriented clinical decision support system that combines a **hybrid OCR pipeline** with a **dual-engine ML architecture** to assess cardiovascular risk directly from raw medical documents — PDFs, scanned images, or structured text.
-
-The system extracts clinical parameters via multi-engine OCR, constructs a 34-feature clinical vector, runs two independently optimised ML models, applies evidence-based clinical safety rules, and returns a structured risk report with explainable contributing factors.
+CardioDetect is a research-driven, production-oriented clinical decision support system. It maps raw medical documents (PDFs, images) to structured cardiovascular risk assessments using a hybrid OCR pipeline and a dual-engine machine learning architecture.
 
 > **Disclaimer:** Not a substitute for professional medical diagnosis. Intended for research and clinical decision-support prototyping only.
 
@@ -39,12 +30,21 @@ The system extracts clinical parameters via multi-engine OCR, constructs a 34-fe
 
 *Evaluation performed using stratified train/test splits across merged Framingham, NHANES, and UCI datasets.*
 
-### Validation Strategy
+## Model Validation & Reproducibility
 
-- **Stratified Split:** 70/15/15 (Train/Validation/Test)
-- **Data Harmonization:** Cross-dataset standardisation across 3 distinct epidemiological sources
-- **Evaluation:** Strict held-out evaluation on unseen test samples
-- **Grounding:** Risk agreement measured directly against ACC/AHA pooled cohort clinical thresholds
+### Evaluation Methodology
+Models were evaluated using a strict **70/15/15 stratified split** to preserve minority-class target distributions. 
+- **Harmonization:** Cross-dataset standardization aligned 40+ clinical aliases across three distinct epidemiological sources.
+- **Grounding:** 10-year CHD risk agreement is measured directly against ACC/AHA pooled cohort clinical thresholds.
+- **Explainability:** Feature attributions trace risk classifications back to primary clinical inputs (e.g., elevated SBP, lipid profile abnormalities).
+
+### Reproducing the Pipeline
+Training pipelines and hyperparameter search spaces (Optuna) are preserved in the respective Milestone directories.
+
+To reproduce the optimal model weights:
+1. Fetch the raw datasets (see [Dataset Credits](#dataset-credits-citations)).
+2. Execute the inference/harmonisation notebooks (`Milestone_1/`).
+3. Run the ensemble training processes (`Milestone_2/`) to regenerate `.pkl` artifacts.
 
 ---
 
@@ -148,6 +148,16 @@ CardioDetect/
 ```
 
 Extended documentation → [`/docs`](docs/)
+
+---
+
+## Dataset Credits & Citations
+
+This pipeline harmonizes three publicly available epidemiological datasets. If adapting this work, please respect the usage agreements of the original authors:
+
+1. **Framingham Heart Study:** Provided via the NHLBI Biologic Specimen and Data Repository.
+2. **NHANES 2013–2014:** National Health and Nutrition Examination Survey, curated by the Centers for Disease Control and Prevention (CDC).
+3. **UCI Heart Disease Repository:** Includes cohorts from Cleveland Clinic, Hungarian Institute of Cardiology, V.A. Medical Center (Long Beach), and University Hospital (Zurich). [Link](https://archive.ics.uci.edu/dataset/45/heart+disease)
 
 ---
 
