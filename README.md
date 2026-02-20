@@ -44,7 +44,7 @@ The system extracts clinical parameters via multi-engine OCR, constructs a 34-fe
 
 ```mermaid
 graph TB
-    A([Medical Document]) --> B[Hybrid OCR Engine<br/>Tesseract · pdf2image · EasyOCR]
+    A([Medical Document]) --> B[Hybrid OCR Engine<br/>Tesseract · OpenCV · EasyOCR]
     B --> C[Feature Engineering<br/>34-feature clinical vector]
     C --> D1[Detection Engine<br/>Voting Ensemble · 91.30%]
     C --> D2[Prediction Engine<br/>XGBoost Regressor · 91.63%]
@@ -67,7 +67,7 @@ graph LR
     V & R --> OUT([LOW · MODERATE · HIGH])
 ```
 
-Two engines are better than one: **Detection** answers *is there a condition?* while **Prediction** answers *what is the quantified 10-year risk?* The outputs are fused through a clinical safety layer before the final classification is emitted.
+The dual-engine design separates binary disease detection from long-term risk prediction, enabling modular optimisation and clearer clinical interpretation. The outputs are fused through a clinical safety layer before the final classification is emitted.
 
 ---
 
@@ -97,6 +97,8 @@ print(result['risk_category'], f\"{result['risk_score']*100:.1f}%\")
 cd Milestone_3 && python manage.py runserver      # API  → localhost:8000
 cd Milestone_3/frontend && npm i && npm run dev   # UI   → localhost:3000
 ```
+
+<img src="docs/assets/dashboard.png" width="800" alt="CardioDetect Patient Dashboard" />
 
 ---
 
