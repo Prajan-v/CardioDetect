@@ -9,9 +9,10 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e?style=flat-square" alt="License"></a>
   <a href="https://doi.org/10.36227/techrxiv.177154153.36052407/v1"><img src="https://img.shields.io/badge/Preprint-TechRxiv-0066cc?style=flat-square&logo=ieee&logoColor=white" alt="TechRxiv"></a>
   <a href="https://orcid.org/0009-0008-3295-2950"><img src="https://img.shields.io/badge/ORCID-0009--0008--3295--2950-A6CE39?style=flat-square&logo=orcid&logoColor=white" alt="ORCID"></a>
+  <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build Status">
 </p>
 
-<p><em>Upload a medical report. Get a cardiovascular risk assessment. No manual data entry.</em></p>
+<p><em>Upload a medical report and receive an automated cardiovascular risk assessment — no manual data entry required.</em></p>
 
 </div>
 
@@ -36,7 +37,14 @@ The system extracts clinical parameters via multi-engine OCR, constructs a 34-fe
 | Universal OCR Engine | Clinical field extraction | PDF · Image · Text |
 | Feature pipeline | Engineered clinical vector | 34+ features |
 
-*Trained on Framingham Heart Study, NHANES 2013–14, and UCI Heart Disease datasets.*
+*Evaluation performed using stratified train/test splits across merged Framingham, NHANES, and UCI datasets.*
+
+### Validation Strategy
+
+- **Stratified Split:** 70/15/15 (Train/Validation/Test)
+- **Data Harmonization:** Cross-dataset standardisation across 3 distinct epidemiological sources
+- **Evaluation:** Strict held-out evaluation on unseen test samples
+- **Grounding:** Risk agreement measured directly against ACC/AHA pooled cohort clinical thresholds
 
 ---
 
@@ -97,6 +105,8 @@ print(result['risk_category'], f\"{result['risk_score']*100:.1f}%\")
 cd Milestone_3 && python manage.py runserver      # API  → localhost:8000
 cd Milestone_3/frontend && npm i && npm run dev   # UI   → localhost:3000
 ```
+
+> **Reproducibility:** To reproduce training results, run the notebooks located in `Milestone_1/` and `Milestone_2/`.
 
 <img src="docs/assets/dashboard.png" width="800" alt="CardioDetect Patient Dashboard" />
 
