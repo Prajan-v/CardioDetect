@@ -23,19 +23,19 @@ CardioDetect is a research-driven, production-oriented clinical decision support
 
 | Engine | Task | Result |
 |--------|------|--------|
-| Voting Ensemble (XGBoost · LightGBM · MLP · RF) | Heart disease detection | **91.30% accuracy** |
-| XGBoost Regressor | 10-year CHD risk stratification | **91.63% category agreement** |
+| Detection Engine (Voting Ensemble) | Binary disease detection | **91.30% accuracy** |
+| Prediction Engine (XGBoost Regressor) | 10-year CHD risk stratification | **91.63% category agreement** |
 | Universal OCR Engine | Clinical field extraction | PDF · Image · Text |
 | Feature pipeline | Engineered clinical vector | 34+ features |
 
-*Evaluation performed using stratified train/test splits across merged Framingham, NHANES, and UCI datasets.*
+*The Detection Engine was trained on the UCI Heart Disease dataset, while the Prediction Engine was trained on an extended 16,000+ row dataset harmonizing the Framingham Heart Study with Kaggle cardiovascular cohorts. (NHANES was evaluated for feature enrichment but excluded from supervised training due to lacking a 10-year CHD target).*
 
 ## Model Validation & Reproducibility
 
 ### Evaluation Methodology
 Models were evaluated using a strict **70/15/15 stratified split** to preserve minority-class target distributions. 
-- **Harmonization:** Cross-dataset standardization aligned 40+ clinical aliases across three distinct epidemiological sources.
-- **Grounding:** 10-year CHD risk agreement is measured directly against ACC/AHA pooled cohort clinical thresholds.
+- **Harmonization:** Cross-dataset standardization aligned 40+ clinical aliases across multiple epidemiological sources.
+- **Grounding:** 10-year CHD risk agreement is measured directly against **2013 ACC/AHA Pooled Cohort Equations** and **D'Agostino et al. (2008)** clinical thresholds.
 - **Explainability:** Feature attributions trace risk classifications back to primary clinical inputs (e.g., elevated SBP, lipid profile abnormalities).
 
 ### Reproducing the Pipeline
