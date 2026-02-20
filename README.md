@@ -38,7 +38,7 @@ Models were evaluated using a strict **70/15/15 stratified split** to preserve m
 - **Grounding:** 10-year CHD risk agreement is measured directly against **2013 ACC/AHA Pooled Cohort Equations** and **D'Agostino et al. (2008)** clinical thresholds.
 - **Explainability:** Feature attributions trace risk classifications back to primary clinical inputs (e.g., elevated SBP, lipid profile abnormalities).
 
-<img src="docs/assets/shap_summary.png" width="600" alt="SHAP Feature Importance Summary" />
+<img src="docs/assets/analytics_1.png" width="800" alt="CardioDetect Explainability Dashboard" />
 
 ### Reproducing the Pipeline
 Training pipelines and hyperparameter search spaces (Optuna) are preserved in the respective Milestone directories.
