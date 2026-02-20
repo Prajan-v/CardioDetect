@@ -1,159 +1,162 @@
 <div align="center">
 
-# ❤️ CardioDetect
+<h1>CardioDetect</h1>
 
-### *Clinical Decision Support System for Cardiovascular Risk Assessment*
+<p><strong>Clinical Decision Support System for Cardiovascular Risk Assessment</strong></p>
 
-[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
-[![TechRxiv](https://img.shields.io/badge/Preprint-TechRxiv-blue?style=flat-square&logo=ieee&logoColor=white)](https://doi.org/10.36227/techrxiv.177154153.36052407/v1)
-[![ORCID](https://img.shields.io/badge/ORCID-0009--0008--3295--2950-A6CE39?style=flat-square&logo=orcid&logoColor=white)](https://orcid.org/0009-0008-3295-2950)
+<p>
+  <a href="https://python.org"><img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e?style=flat-square" alt="License"></a>
+  <a href="https://doi.org/10.36227/techrxiv.177154153.36052407/v1"><img src="https://img.shields.io/badge/Preprint-TechRxiv-0066cc?style=flat-square&logo=ieee&logoColor=white" alt="TechRxiv"></a>
+  <a href="https://orcid.org/0009-0008-3295-2950"><img src="https://img.shields.io/badge/ORCID-0009--0008--3295--2950-A6CE39?style=flat-square&logo=orcid&logoColor=white" alt="ORCID"></a>
+</p>
+
+<p><em>Upload a medical report. Get a cardiovascular risk assessment. No manual data entry.</em></p>
 
 </div>
 
 ---
 
-CardioDetect is a research-driven, production-oriented CDSS that assesses cardiovascular risk directly from raw medical documents — no manual data entry. Upload a PDF or image lab report; the system extracts clinical parameters via a hybrid OCR pipeline, feeds them into a dual-engine ML model, and returns a categorized risk report with explainable contributing factors.
+## Overview
 
-> ⚠️ Not a substitute for professional medical diagnosis. Designed for research and decision-support prototyping.
+CardioDetect is a research-driven, production-oriented clinical decision support system that combines a **hybrid OCR pipeline** with a **dual-engine ML architecture** to assess cardiovascular risk directly from raw medical documents — PDFs, scanned images, or structured text.
 
----
+The system extracts clinical parameters via multi-engine OCR, constructs a 34-feature clinical vector, runs two independently optimised ML models, applies evidence-based clinical safety rules, and returns a structured risk report with explainable contributing factors.
 
-## 🏆 Results
-
-| Metric | Value |
-|--------|-------|
-| Heart Disease Detection Accuracy | **91.30%** (Voting Ensemble) |
-| 10-Year CHD Risk Category Agreement | **91.63%** (XGBoost Regressor) |
-| Feature Vector Dimensions | **34+** engineered clinical features |
-| OCR Input Formats | PDF · Scanned Image · Structured Text |
-| Training Data | Framingham · NHANES 2013–14 · UCI Heart Disease |
+> **Disclaimer:** Not a substitute for professional medical diagnosis. Intended for research and clinical decision-support prototyping only.
 
 ---
 
-## 🏗️ System Architecture
+## Performance
+
+| Engine | Task | Result |
+|--------|------|--------|
+| Voting Ensemble (XGBoost · LightGBM · MLP · RF) | Heart disease detection | **91.30% accuracy** |
+| XGBoost Regressor | 10-year CHD risk stratification | **91.63% category agreement** |
+| Universal OCR Engine | Clinical field extraction | PDF · Image · Text |
+| Feature pipeline | Engineered clinical vector | 34+ features |
+
+*Trained on Framingham Heart Study, NHANES 2013–14, and UCI Heart Disease datasets.*
+
+---
+
+## Architecture
 
 ```mermaid
 graph TB
-    A[Medical Document\nPDF / Image / Text] --> B[Hybrid OCR Engine\nTesseract · pdf2image · EasyOCR]
-    B --> C[Feature Engineering\n34-feature clinical vector]
-    C --> D1[Detection Engine\nVoting Ensemble · 91.30%]
-    C --> D2[Prediction Engine\nXGBoost Regressor · 91.63%]
-    D1 & D2 --> E[Clinical Safety Layer\nOverride Rules · Explainability]
-    E --> F[Risk Report\nLOW · MODERATE · HIGH\n+ Top contributing factors]
+    A([Medical Document]) --> B[Hybrid OCR Engine<br/>Tesseract · pdf2image · EasyOCR]
+    B --> C[Feature Engineering<br/>34-feature clinical vector]
+    C --> D1[Detection Engine<br/>Voting Ensemble · 91.30%]
+    C --> D2[Prediction Engine<br/>XGBoost Regressor · 91.63%]
+    D1 & D2 --> E[Clinical Safety Layer<br/>Override rules · Explainability]
+    E --> F([Risk Report — LOW · MODERATE · HIGH])
 ```
 
----
-
-## 🤖 Dual-Engine ML
+### Dual-Engine Design
 
 ```mermaid
 graph LR
-    subgraph E1["Detection — Binary"]
-        XGB1[XGBoost] & LGB[LightGBM] & MLP[MLP NN] & RF[Random Forest]
-        --> VE["Voting Ensemble\n91.30% Accuracy"]
+    subgraph Detection["Binary Detection"]
+        direction TB
+        A1[XGBoost] & A2[LightGBM] & A3[MLP] & A4[Random Forest] --> V[Soft Voting Ensemble<br/>91.30% Accuracy]
     end
-    subgraph E2["Prediction — Continuous"]
-        XGB2[XGBoost Regressor]
-        --> RR["10-Year CHD Risk %\n91.63% Category Agreement"]
+    subgraph Prediction["Continuous Prediction"]
+        direction TB
+        B1[XGBoost Regressor] --> R[10-Year CHD Risk %<br/>91.63% Category Agreement]
     end
-    VE & RR --> OUT["Final: LOW · MODERATE · HIGH"]
+    V & R --> OUT([LOW · MODERATE · HIGH])
 ```
+
+Two engines are better than one: **Detection** answers *is there a condition?* while **Prediction** answers *what is the quantified 10-year risk?* The outputs are fused through a clinical safety layer before the final classification is emitted.
 
 ---
 
-## 🚀 Installation
+## Quickstart
+
+**Requirements:** Python 3.10+, Tesseract OCR
 
 ```bash
+# 1. Clone and install
 git clone https://github.com/Prajan-v/CardioDetect.git
 cd CardioDetect
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+brew install tesseract        # macOS — apt install tesseract-ocr on Ubuntu
 
-# Tesseract OCR (macOS)
-brew install tesseract
-```
-
----
-
-## 💡 Usage
-
-```python
+# 2. Run a prediction
+python -c "
 from src.cardiodetect_v3_pipeline import CardioDetectV3
-
-pipeline = CardioDetectV3()
-result = pipeline.run("lab_report.pdf")
-
-print(result["risk_category"])       # LOW | MODERATE | HIGH
-print(result["risk_score"] * 100)    # e.g. 32.7
-print(result["recommendation"])
-for reason in result["explanations"]["top_reasons"]:
-    print(f"  • {reason}")
+result = CardioDetectV3().run('lab_report.pdf')
+print(result['risk_category'], f\"{result['risk_score']*100:.1f}%\")
+"
 ```
 
-**Web app** — Django backend + Next.js frontend:
+**Web application** (Django + Next.js):
 
 ```bash
-cd Milestone_3 && python manage.py runserver   # http://localhost:8000
-cd Milestone_3/frontend && npm install && npm run dev  # http://localhost:3000
+cd Milestone_3 && python manage.py runserver      # API  → localhost:8000
+cd Milestone_3/frontend && npm i && npm run dev   # UI   → localhost:3000
 ```
 
 ---
 
-## 📄 Research Publication
+## Output
 
-CardioDetect is formally published as a preprint on TechRxiv (IEEE's preprint platform for technology research).
-
-**Prajan Narayanan V**,
-*CardioDetect: An Integrated Clinical Decision Support System for Cardiovascular Risk Assessment Using Dual-Engine ML and Hybrid OCR Pipeline*,
-TechRxiv, 2026.
-DOI: [10.36227/techrxiv.177154153.36052407/v1](https://doi.org/10.36227/techrxiv.177154153.36052407/v1)
-
-```bibtex
-@misc{narayanan2026cardiodetect,
-  author    = {Narayanan V, Prajan},
-  title     = {CardioDetect: An Integrated Clinical Decision Support System
-               for Cardiovascular Risk Assessment Using Dual-Engine ML
-               and Hybrid OCR Pipeline},
-  year      = {2026},
-  publisher = {TechRxiv},
-  doi       = {10.36227/techrxiv.177154153.36052407/v1}
+```json
+{
+  "risk_category": "MODERATE",
+  "risk_score": 0.327,
+  "recommendation": "Moderate cardiovascular risk (32.7%). Consult a healthcare provider for risk factor management.",
+  "explanations": {
+    "top_reasons": [
+      "Systolic blood pressure 148 mmHg is elevated.",
+      "Total cholesterol 225 mg/dL is borderline high.",
+      "Age 58 years contributes to elevated cardiovascular risk."
+    ]
+  },
+  "ocr_confidence": { "average": 0.89 },
+  "audit": { "engine": "tesseract_ocr", "model_version": "risk_regressor_v2" }
 }
 ```
 
 ---
 
-## 📁 Project Structure
+## Project Layout
 
 ```
 CardioDetect/
-├── Milestone_1/   # EDA & data preprocessing
-├── Milestone_2/   # ML model development & OCR pipeline
-├── Milestone_3/   # Django + Next.js web application
-├── Milestone_4/   # Research paper & final report
-├── src/           # Core library (pipeline, models, OCR, preprocessing)
-├── tests/         # pytest test suite
-└── results/       # Model evaluation outputs
+├── Milestone_1/        EDA and data preprocessing
+├── Milestone_2/        ML model development and OCR pipeline
+├── Milestone_3/        Django REST backend + Next.js frontend
+├── Milestone_4/        Research paper and final report
+├── src/                Core library — pipeline, models, preprocessing
+├── tests/              pytest test suite
+├── docs/               Architecture, API reference, project structure
+└── results/            Model evaluation outputs
 ```
 
-> Detailed structure, API reference, architecture deep-dives, and data pipeline docs → [`/docs`](docs/)
+Extended documentation → [`/docs`](docs/)
 
 ---
 
-## ⚠️ Limitations
+## Limitations
 
-- Trained on publicly available datasets — not validated in real-time clinical deployment
-- OCR accuracy depends on document scan quality
-- Model reflects Framingham/NHANES/UCI demographics; may not generalize to all populations
-
----
-
-## 📜 License
-
-MIT — see [LICENSE](LICENSE).
+- Trained on publicly available epidemiological datasets; not validated in clinical deployment
+- OCR field extraction quality depends on document scan resolution
+- Model demographics reflect Framingham/NHANES/UCI populations and may not generalise universally
 
 ---
 
-<div align="center">
-<sub>Built for better cardiovascular care · <a href="https://doi.org/10.36227/techrxiv.177154153.36052407/v1">Read the paper</a></sub>
-</div>
+## Publication
+
+CardioDetect is formally published as a preprint on **TechRxiv**, IEEE's preprint platform for technology research.
+
+**Prajan Narayanan V** — *CardioDetect: An Integrated Clinical Decision Support System for Cardiovascular Risk Assessment Using Dual-Engine ML and Hybrid OCR Pipeline* — TechRxiv, 2026.
+
+DOI: [10.36227/techrxiv.177154153.36052407/v1](https://doi.org/10.36227/techrxiv.177154153.36052407/v1)
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).
