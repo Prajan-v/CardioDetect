@@ -181,10 +181,10 @@ CardioDetect is formally published as a preprint on **TechRxiv**, IEEE's preprin
 
 **Prajan Narayanan V** — *CardioDetect: An Integrated Clinical Decision Support System for Cardiovascular Risk Assessment Using Dual-Engine ML and Hybrid OCR Pipeline* — TechRxiv, 2026.
 
-DOI: [10.36227/techrxiv.177154153.36052407/v1](https://doi.org/10.36227/techrxiv.177154153.36052407/v1)
+DOI: [10.36227/techrxiv.177154153.36052407/v1](https://doi.org/10.36227/techrxiv.177154153.36052407/v1) ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQChsgfGni/KHWFU2BurtBslECie5UcQ3roNdJZypNDaJn3kBdn40Qbd78enZ0CaoMDmjzgABuVmhTHX/Oux19wjua8ihPjsXL0VmU+LO0+IqBcAU/MIUdAv709rPq1fswZYhL3vY4DWafilx0/lHrb9Z8wj+Y26AJK1HHgq9N1EY4rjerEK+BydF4cqQYTIiaXic73DTXX1nMTOugt6uZATrxsmPRctnoeUis+sRNXalPJLvOn4AtUsEYk3WvxZW5dqLtXamiq3PG08+S4Z1AOVOjadYfC6bbBk05Ib26Iiyq/yoamu4vB9zxHETEnoszS+5dWVPo0XXKxf5H8TaQziAqwMPZkbfKvreHtxi5frHFdRKkBcn9fKUppHDngy56MbFC/cvjNcdSsKHJMSfTNbllqPfJQKcLmWbqQ7ZF/YxFsPz9NGhEGfCQdOP3VN/vEuR40ogDkTwcVYGtkF2NDGk+J1tQ9WeoAxWmZxYJeYnT13lgrURTQJtZTRF5BdubU= authorea_deploy_key
 
 ---
 
 ## License
 
-Released under the [MIT License](LICENSE).
+Released under the [MIT License](LICENSE). 
